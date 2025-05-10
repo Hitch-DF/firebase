@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { Signal, SortConfig, SortKey, SignalCategory } from '@/lib/types';
@@ -14,15 +15,60 @@ import { Badge } from '@/components/ui/badge';
 import { SignalAge } from './signal-age';
 import Link from 'next/link';
 import { ExternalLink, ArrowUpDown, TrendingUp, TrendingDown, Tag, Star } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 
 interface SignalTableProps {
   signals: Signal[];
   isLoading: boolean;
   error: Error | null;
-  onToggleFavorite: (signalId: string) => void; // Simplified: only needs signalId to identify ticker
+  onToggleFavorite: (signalId: string) => void;
+  language: 'fr' | 'en';
+  loadingText: string;
+  noSignalsText: string;
+  errorLoadingText: string;
 }
+
+const translations = {
+  fr: {
+    favHeader: "Fav.",
+    assetHeader: "Actif",
+    priceHeader: "Prix",
+    dateTimeHeader: "Date et Heure",
+    ageHeader: "Âge du Signal",
+    signalHeader: "Signal",
+    categoryHeader: "Catégorie",
+    chartHeader: "Graphique",
+    buyAction: "Achat",
+    sellAction: "Vente",
+    viewChartButton: "Voir",
+    categoryCrypto: "Crypto",
+    categoryForex: "Forex",
+    categoryCommodities: "Matières Prem.",
+    removeFromWatchlist: "Retirer de la watchlist globale",
+    addToWatchlist: "Ajouter à la watchlist globale",
+  },
+  en: {
+    favHeader: "Fav.",
+    assetHeader: "Asset",
+    priceHeader: "Price",
+    dateTimeHeader: "Date & Time",
+    ageHeader: "Signal Age",
+    signalHeader: "Signal",
+    categoryHeader: "Category",
+    chartHeader: "Chart",
+    buyAction: "Buy",
+    sellAction: "Sell",
+    viewChartButton: "View",
+    categoryCrypto: "Crypto",
+    categoryForex: "Forex",
+    categoryCommodities: "Commodities",
+    removeFromWatchlist: "Remove from global watchlist",
+    addToWatchlist: "Add to global watchlist",
+  }
+};
+
+type TranslationKey = keyof typeof translations.fr;
 
 const SortableHeader = ({
   children,
@@ -46,14 +92,26 @@ const SortableHeader = ({
   </TableHead>
 );
 
-const categoryDisplay: Record<SignalCategory, string> = {
-  crypto: "Crypto",
-  forex: "Forex",
-  commodities: "Matières Prem.",
-};
 
-export function SignalTable({ signals, isLoading, error, onToggleFavorite }: SignalTableProps) {
+export function SignalTable({ 
+  signals, 
+  isLoading, 
+  error, 
+  onToggleFavorite, 
+  language,
+  loadingText,
+  noSignalsText,
+  errorLoadingText 
+}: SignalTableProps) {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'time', direction: 'desc' });
+  
+  const t = useCallback((key: TranslationKey) => translations[language][key] || translations.fr[key], [language]);
+
+  const categoryDisplay: Record<SignalCategory, string> = {
+    crypto: t('categoryCrypto'),
+    forex: t('categoryForex'),
+    commodities: t('categoryCommodities'),
+  };
 
   const sortedSignals = useMemo(() => {
     let sortableItems = [...signals];
@@ -64,7 +122,6 @@ export function SignalTable({ signals, isLoading, error, onToggleFavorite }: Sig
             const valB = b.isFavorite ? 1 : 0;
             if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
             if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
-            // Secondary sort by time if favorite status is the same
             return new Date(b.time).getTime() - new Date(a.time).getTime();
         }
 
@@ -95,7 +152,7 @@ export function SignalTable({ signals, isLoading, error, onToggleFavorite }: Sig
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        <p className="ml-4 text-muted-foreground">Chargement des signaux...</p>
+        <p className="ml-4 text-muted-foreground">{loadingText}</p>
       </div>
     );
   }
@@ -103,14 +160,14 @@ export function SignalTable({ signals, isLoading, error, onToggleFavorite }: Sig
   if (error) {
     return (
       <div className="text-center py-10 px-4 bg-destructive/10 border border-destructive rounded-lg">
-        <p className="text-destructive font-semibold">Erreur de chargement des signaux:</p>
+        <p className="text-destructive font-semibold">{errorLoadingText}</p>
         <p className="text-destructive/80">{error.message}</p>
       </div>
     );
   }
   
   if (sortedSignals.length === 0) {
-    return <div className="text-center py-10 px-4 bg-card border rounded-lg shadow-sm"><p className="text-muted-foreground">Aucun signal à afficher pour le moment.</p></div>;
+    return <div className="text-center py-10 px-4 bg-card border rounded-lg shadow-sm"><p className="text-muted-foreground">{noSignalsText}</p></div>;
   }
 
   return (
@@ -118,14 +175,14 @@ export function SignalTable({ signals, isLoading, error, onToggleFavorite }: Sig
       <Table>
         <TableHeader>
           <TableRow>
-             <SortableHeader onClick={() => requestSort('isFavorite')} sortKey="isFavorite" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>Fav.</SortableHeader>
-            <SortableHeader onClick={() => requestSort('ticker')} sortKey="ticker" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>Actif</SortableHeader>
-            <SortableHeader onClick={() => requestSort('price')} sortKey="price" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>Prix</SortableHeader>
-            <SortableHeader onClick={() => requestSort('time')} sortKey="time" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>Date et Heure</SortableHeader>
-            <TableHead>Âge du Signal</TableHead>
-            <SortableHeader onClick={() => requestSort('action')} sortKey="action" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>Signal</SortableHeader>
-            <SortableHeader onClick={() => requestSort('category')} sortKey="category" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>Catégorie</SortableHeader>
-            <TableHead>Graphique</TableHead>
+             <SortableHeader onClick={() => requestSort('isFavorite')} sortKey="isFavorite" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('favHeader')}</SortableHeader>
+            <SortableHeader onClick={() => requestSort('ticker')} sortKey="ticker" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('assetHeader')}</SortableHeader>
+            <SortableHeader onClick={() => requestSort('price')} sortKey="price" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('priceHeader')}</SortableHeader>
+            <SortableHeader onClick={() => requestSort('time')} sortKey="time" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('dateTimeHeader')}</SortableHeader>
+            <TableHead>{t('ageHeader')}</TableHead>
+            <SortableHeader onClick={() => requestSort('action')} sortKey="action" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('signalHeader')}</SortableHeader>
+            <SortableHeader onClick={() => requestSort('category')} sortKey="category" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('categoryHeader')}</SortableHeader>
+            <TableHead>{t('chartHeader')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -135,19 +192,19 @@ export function SignalTable({ signals, isLoading, error, onToggleFavorite }: Sig
                 <Star
                   className={cn(
                     "h-5 w-5 cursor-pointer transition-all duration-150 ease-in-out",
-                    signal.isFavorite // Directly use signal.isFavorite which is updated by the hook
+                    signal.isFavorite 
                       ? "fill-yellow-400 text-yellow-500 scale-110" 
                       : "text-muted-foreground hover:text-yellow-400 hover:scale-110"
                   )}
                   onClick={() => onToggleFavorite(signal.id)}
-                  aria-label={signal.isFavorite ? "Retirer de la watchlist globale" : "Ajouter à la watchlist globale"}
+                  aria-label={signal.isFavorite ? t('removeFromWatchlist') : t('addToWatchlist')}
                 />
               </TableCell>
               <TableCell className="font-medium">{signal.ticker}</TableCell>
               <TableCell>${signal.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 })}</TableCell>
-              <TableCell>{new Date(signal.time).toLocaleString('fr-FR')}</TableCell>
+              <TableCell>{new Date(signal.time).toLocaleString(language === 'fr' ? 'fr-FR' : 'en-US')}</TableCell>
               <TableCell>
-                <SignalAge timestamp={signal.time} />
+                <SignalAge timestamp={signal.time} language={language} />
               </TableCell>
               <TableCell>
                 <Badge
@@ -159,7 +216,7 @@ export function SignalTable({ signals, isLoading, error, onToggleFavorite }: Sig
                   )}
                 >
                   {signal.action === 'buy' ? <TrendingUp className="mr-1 h-4 w-4" /> : <TrendingDown className="mr-1 h-4 w-4" />}
-                  {signal.action === 'buy' ? 'Achat' : 'Vente'}
+                  {signal.action === 'buy' ? t('buyAction') : t('sellAction')}
                 </Badge>
               </TableCell>
               <TableCell>
@@ -171,7 +228,7 @@ export function SignalTable({ signals, isLoading, error, onToggleFavorite }: Sig
               <TableCell>
                 <Button variant="outline" size="sm" asChild>
                   <Link href={`https://www.tradingview.com/chart/?symbol=${signal.ticker}`} target="_blank" rel="noopener noreferrer">
-                    Voir <ExternalLink className="ml-2 h-4 w-4" />
+                    {t('viewChartButton')} <ExternalLink className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
               </TableCell>

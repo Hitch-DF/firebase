@@ -1,15 +1,32 @@
+
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { formatDistanceToNowStrict } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { fr, enUS } from 'date-fns/locale';
 
 interface SignalAgeProps {
   timestamp: string;
+  language: 'fr' | 'en';
 }
 
-export function SignalAge({ timestamp }: SignalAgeProps) {
+const translations = {
+  fr: {
+    invalidDate: "Date invalide",
+    calculating: "Calcul...",
+  },
+  en: {
+    invalidDate: "Invalid date",
+    calculating: "Calculating...",
+  }
+};
+
+type TranslationKey = keyof typeof translations.fr;
+
+export function SignalAge({ timestamp, language }: SignalAgeProps) {
   const [age, setAge] = useState<string>('');
+
+  const t = useCallback((key: TranslationKey) => translations[language][key] || translations.fr[key], [language]);
 
   useEffect(() => {
     let isMounted = true;
@@ -18,29 +35,27 @@ export function SignalAge({ timestamp }: SignalAgeProps) {
       if (!isMounted) return;
       try {
         const date = new Date(timestamp);
-        // Check if date is valid
         if (isNaN(date.getTime())) {
-          setAge("Date invalide");
+          setAge(t('invalidDate'));
           return;
         }
-        setAge(formatDistanceToNowStrict(date, { addSuffix: true, locale: fr }));
+        setAge(formatDistanceToNowStrict(date, { addSuffix: true, locale: language === 'fr' ? fr : enUS }));
       } catch (error) {
         console.error("Error parsing date for signal age:", error);
         if (isMounted) {
-          setAge("Date invalide");
+          setAge(t('invalidDate'));
         }
       }
     };
 
-    calculateAge(); // Calculate age immediately on mount
-    const intervalId = setInterval(calculateAge, 60000); // Update every minute
+    calculateAge();
+    const intervalId = setInterval(calculateAge, 60000); 
 
     return () => {
       isMounted = false;
       clearInterval(intervalId);
     };
-  }, [timestamp]);
+  }, [timestamp, language, t]);
 
-  // Render placeholder or initial calculated age if available to avoid hydration mismatch warnings for dynamic content
-  return <span suppressHydrationWarning>{age || 'Calcul...'}</span>;
+  return <span suppressHydrationWarning>{age || t('calculating')}</span>;
 }
