@@ -17,7 +17,7 @@ export default function AuthLayout({
     <div className="flex flex-col min-h-screen bg-background selection:bg-primary/20">
       <header className="py-6 px-4 sm:px-8">
         <Link href="/" className="flex items-center gap-2 group w-fit">
-          <OnlySignalsLogo className="h-10 w-auto text-primary transition-transform group-hover:scale-105" />
+          <OnlySignalsLogo height={40} className="transition-transform group-hover:scale-105" />
         </Link>
       </header>
       <main className="flex-grow flex flex-col items-center justify-center p-4">

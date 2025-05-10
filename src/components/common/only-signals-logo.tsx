@@ -1,43 +1,31 @@
 
-import type { SVGProps } from 'react';
+import Image from 'next/image';
+import type { ImageProps as NextImageProps } from 'next/image';
 import { cn } from '@/lib/utils';
 
-export function OnlySignalsLogo(props: SVGProps<SVGSVGElement>) {
+// Aspect ratio of the logo image (width / height)
+// For https://i.imgur.com/f1BHZT0.png (1042x278)
+const LOGO_ASPECT_RATIO = 1042 / 278;
+
+interface OnlySignalsLogoProps extends Omit<NextImageProps, 'src' | 'alt' | 'width' | 'height'> {
+  className?: string;
+  height: number; // Height is now a required prop to control size
+}
+
+export function OnlySignalsLogo({ className, height, ...props }: OnlySignalsLogoProps) {
+  const imageUrl = "https://i.imgur.com/f1BHZT0.png"; // Direct image link from the album
+  const calculatedWidth = Math.round(height * LOGO_ASPECT_RATIO);
+
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 380 100" // Adjusted viewBox to fit text better
-      className={cn("fill-current", props.className)}
+    <Image
+      src={imageUrl}
+      alt="OnlySignals Logo"
+      width={calculatedWidth}
+      height={height}
+      className={cn(className)}
+      priority // Logos are often LCP elements, consider priority
       {...props}
-    >
-      {/* S-like symbol */}
-      <defs>
-        <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style={{ stopColor: "hsl(var(--primary))", stopOpacity: 1 }} />
-          <stop offset="100%" style={{ stopColor: "hsl(var(--accent))", stopOpacity: 1 }} />
-        </linearGradient>
-      </defs>
-      <g transform="translate(10, 0) scale(0.9)">
-        <circle cx="50" cy="50" r="48" fill="url(#logoGradient)" />
-        <path
-          d="M68,35 C68,25 60,15 50,15 C40,15 32,25 32,35 C32,45 40,55 50,55 C55,55 60,52.5 64,48 M32,65 C32,75 40,85 50,85 C60,85 68,75 68,65 C68,55 60,45 50,45 C45,45 40,47.5 36,52"
-          stroke="hsl(var(--primary-foreground))"
-          strokeWidth="10"
-          fill="none"
-          strokeLinecap="round"
-        />
-      </g>
-      {/* Text "OnlySignals" */}
-      <text
-        x="120" // Adjusted x position
-        y="65" // Adjusted y position for vertical centering
-        fontSize="50" // Adjusted font size
-        fontFamily="var(--font-inter), sans-serif"
-        fontWeight="bold"
-        className="fill-foreground"
-      >
-        OnlySignals
-      </text>
-    </svg>
+      data-ai-hint="company logo"
+    />
   );
 }

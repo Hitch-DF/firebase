@@ -58,7 +58,7 @@ function Header({ language, onToggleLanguage }: { language: 'fr' | 'en', onToggl
     <header className="bg-card shadow-sm sticky top-0 z-40">
       <div className="container mx-auto px-4 py-3 sm:py-4 flex flex-col sm:flex-row justify-between items-center gap-2">
         <Link href="/" className="flex items-center gap-2 group w-fit">
-          <OnlySignalsLogo className="h-8 w-auto text-primary transition-transform group-hover:scale-105" />
+          <OnlySignalsLogo height={32} className="transition-transform group-hover:scale-105" />
         </Link>
         <div className="flex flex-col items-center sm:items-end gap-1">
           <div className="flex items-center gap-2">
@@ -195,4 +195,3 @@ export default function HomePage() {
     </div>
   );
 }
-
