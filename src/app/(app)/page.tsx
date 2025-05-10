@@ -171,6 +171,7 @@ export default function HomePage({ }: HomePageProps) {
         loadingText={t('loadingSignals')}
         noSignalsText={t('noSignals')}
         errorLoadingText={t('errorLoadingSignals')}
+        isHistoryView={false} // Explicitly false for main page
       />
     </>
   );

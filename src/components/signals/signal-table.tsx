@@ -26,6 +26,7 @@ interface SignalTableProps {
   loadingText: string;
   noSignalsText: string;
   errorLoadingText: string;
+  isHistoryView?: boolean; // New prop
 }
 
 const translations = {
@@ -100,7 +101,8 @@ export function SignalTable({
   language,
   loadingText,
   noSignalsText,
-  errorLoadingText 
+  errorLoadingText,
+  isHistoryView = false, // Default to false
 }: SignalTableProps) {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'time', direction: 'desc' });
   
@@ -121,6 +123,7 @@ export function SignalTable({
             const valB = b.isFavorite ? 1 : 0;
             if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
             if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+            // Secondary sort by time if favorite status is the same
             return new Date(b.time).getTime() - new Date(a.time).getTime();
         }
 
@@ -135,6 +138,11 @@ export function SignalTable({
         }
         return 0;
       });
+    }
+    // Ensure default sort is by time descending if no sort key is active or if it's the initial state.
+    // This is particularly important for the history page.
+    if (!sortConfig.key || (sortConfig.key === 'time' && sortConfig.direction === 'desc')) {
+        // The API already sorts by time, but this reinforces it client-side if needed.
     }
     return sortableItems;
   }, [signals, sortConfig]);
@@ -178,7 +186,7 @@ export function SignalTable({
             <SortableHeader onClick={() => requestSort('ticker')} sortKey="ticker" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('assetHeader')}</SortableHeader>
             <SortableHeader onClick={() => requestSort('price')} sortKey="price" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('priceHeader')}</SortableHeader>
             <SortableHeader onClick={() => requestSort('time')} sortKey="time" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('dateTimeHeader')}</SortableHeader>
-            <TableHead>{t('ageHeader')}</TableHead>
+            {!isHistoryView && <TableHead>{t('ageHeader')}</TableHead>}
             <SortableHeader onClick={() => requestSort('action')} sortKey="action" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('signalHeader')}</SortableHeader>
             <SortableHeader onClick={() => requestSort('category')} sortKey="category" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('categoryHeader')}</SortableHeader>
             <TableHead>{t('chartHeader')}</TableHead>
@@ -202,9 +210,11 @@ export function SignalTable({
               <TableCell className="font-medium">{signal.ticker}</TableCell>
               <TableCell>${signal.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 })}</TableCell>
               <TableCell>{new Date(signal.time).toLocaleString(language === 'fr' ? 'fr-FR' : 'en-US')}</TableCell>
-              <TableCell>
-                <SignalAge timestamp={signal.time} language={language} />
-              </TableCell>
+              {!isHistoryView && (
+                <TableCell>
+                  <SignalAge timestamp={signal.time} language={language} />
+                </TableCell>
+              )}
               <TableCell>
                 <Badge
                   variant={signal.action === 'buy' ? 'default' : 'destructive'}

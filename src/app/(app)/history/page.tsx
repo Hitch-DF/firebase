@@ -51,8 +51,8 @@ export default function HistoryPage() {
   }, []);
 
   const filteredSignals = useMemo(() => {
-    // History page might have different default sorting or additional date range filters in a real app.
-    // For now, it uses the same filtering logic as the main page.
+    // The API already sorts signals by time descending.
+    // Additional client-side sorting can be done by SignalTable.
     return signals.filter((signal) => {
       const searchTermMatch = signal.ticker.toLowerCase().includes(filters.searchTerm.toLowerCase());
       const actionMatch = filters.action === 'all' || signal.action === filters.action;
@@ -86,7 +86,6 @@ export default function HistoryPage() {
         onFilterChange={setFilters} 
         initialFilters={filters} 
         language={CURRENT_LANGUAGE}
-        // Example of how to customize placeholder if needed:
         // searchPlaceholder={t('searchPlaceholder')} 
       />
 
@@ -99,6 +98,7 @@ export default function HistoryPage() {
         loadingText={t('loadingSignals')}
         noSignalsText={t('noSignals')}
         errorLoadingText={t('errorLoadingSignals')}
+        isHistoryView={true} // Indicate this is the history view
       />
     </div>
   );
