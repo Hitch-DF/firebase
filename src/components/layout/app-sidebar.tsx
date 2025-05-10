@@ -60,6 +60,9 @@ export function AppSidebar({ language }: AppSidebarProps) {
     { href: '#', label: t('communitySignal'), icon: Users, soon: true, activePath: /^\/community/ }, // Placeholder
   ];
 
+  // Convert French mobile number to international format for WhatsApp link
+  const whatsappNumber = "33659778228"; // Assuming +33 country code for France
+
   return (
     <Sidebar collapsible="icon" variant="sidebar" side="left">
       <SidebarHeader className="p-4 border-b border-sidebar-border">
@@ -109,7 +112,7 @@ export function AppSidebar({ language }: AppSidebarProps) {
               className="w-full justify-start text-sidebar-foreground bg-sidebar-accent/10 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-sidebar-accent/50"
               asChild
             >
-              <a href="https://wa.me/1234567890" target="_blank" rel="noopener noreferrer"> {/* Replace with actual WhatsApp link */}
+              <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer">
                 <MessageSquare className="mr-2 h-4 w-4" />
                 {t('contactMe')}
                 <ExternalLink className="ml-auto h-3 w-3" />
