@@ -15,8 +15,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 182 100% 40%; /* Electric Blue - darker for better contrast as primary */
-    --primary-foreground: 180 0% 100%; /* White for text on Electric Blue */
+    --primary: 258 70% 60%; /* Violet */
+    --primary-foreground: 0 0% 100%; /* White for text on Violet */
     
     --secondary: 210 40% 96.1%; /* Default: Cool Gray 100 */
     --secondary-foreground: 222.2 47.4% 11.2%; /* Default: Cool Gray 700 */
@@ -24,15 +24,15 @@
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%; /* Default: Cool Gray 500 */
 
-    --accent: 182 100% 74.5%; /* Electric Blue (lighter variant for accents like hover states if needed) */
-    --accent-foreground: 182 60% 20%; /* Dark Cyan for text on lighter Electric Blue */
+    --accent: 258 70% 88%; /* Lighter Violet for accents */
+    --accent-foreground: 258 70% 30%; /* Darker Violet for text on lighter Violet */
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 214.3 31.8% 91.4%; /* Default: Cool Gray 200 */
     --input: 214.3 31.8% 91.4%;
-    --ring: 182 100% 40%; /* Electric Blue for focus rings (matching primary) */
+    --ring: 258 70% 60%; /* Violet for focus rings (matching primary) */
 
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
@@ -41,15 +41,15 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
 
-    /* Sidebar specific colors - can keep default or align with new theme */
+    /* Sidebar specific colors - align with new theme */
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 182 100% 40%; /* Electric Blue */
+    --sidebar-primary: 258 70% 60%; /* Violet */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 182 100% 74.5%; /* Lighter Electric Blue for sidebar accents */
-    --sidebar-accent-foreground: 182 60% 20%;
+    --sidebar-accent: 258 70% 88%; /* Lighter Violet for sidebar accents */
+    --sidebar-accent-foreground: 258 70% 30%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 182 100% 40%;
+    --sidebar-ring: 258 70% 60%;
   }
 
   .dark {
@@ -62,8 +62,8 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 182 100% 68%; /* Electric Blue (lighter for dark mode) */
-    --primary-foreground: 182 60% 15%; /* Dark Cyan for text on Electric Blue in dark mode */
+    --primary: 258 70% 70%; /* Lighter Violet for dark mode */
+    --primary-foreground: 258 70% 15%; /* Dark Violet for text on Violet in dark mode */
     
     --secondary: 217.2 32.6% 17.5%; /* Default: Cool Gray 800 */
     --secondary-foreground: 210 40% 98%;
@@ -71,15 +71,15 @@
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 217.9 10.6% 64.9%; /* Default: Cool Gray 400 */
 
-    --accent: 182 100% 74.5%; /* Electric Blue (even lighter/brighter for accents in dark mode) */
-    --accent-foreground: 182 60% 20%; /* Dark Cyan */
+    --accent: 258 70% 58%; /* A mid-tone Violet for accents in dark mode */
+    --accent-foreground: 258 70% 95%; /* Very light Violet */
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 182 100% 68%; /* Electric Blue for focus rings (matching primary dark) */
+    --ring: 258 70% 70%; /* Lighter Violet for focus rings (matching primary dark) */
 
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
@@ -90,12 +90,12 @@
     /* Sidebar specific colors - dark theme */
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 182 100% 68%; /* Electric Blue */
-    --sidebar-primary-foreground: 182 60% 15%;
-    --sidebar-accent: 182 100% 74.5%;
-    --sidebar-accent-foreground: 182 60% 20%;
+    --sidebar-primary: 258 70% 70%; /* Lighter Violet */
+    --sidebar-primary-foreground: 258 70% 15%;
+    --sidebar-accent: 258 70% 58%;
+    --sidebar-accent-foreground: 258 70% 95%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 182 100% 68%;
+    --sidebar-ring: 258 70% 70%;
   }
 }
 
