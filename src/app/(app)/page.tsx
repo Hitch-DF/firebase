@@ -17,7 +17,7 @@ const translations = {
     simulateRandomSignalButton: "Simuler Signal Aléatoire",
     refreshButton: "Rafraîchir",
     loadingSignals: "Chargement des signaux...",
-    noSignals: "Aucun signal à afficher pour le moment.",
+    noSignals: "Aucun signal à afficher pour le moment (derniers 7 jours).",
     errorLoadingSignals: "Erreur de chargement des signaux:",
   },
   en: {
@@ -26,7 +26,7 @@ const translations = {
     simulateRandomSignalButton: "Simulate Random Signal",
     refreshButton: "Refresh",
     loadingSignals: "Loading signals...",
-    noSignals: "No signals to display at the moment.",
+    noSignals: "No signals to display at the moment (last 7 days).",
     errorLoadingSignals: "Error loading signals:",
   }
 };
@@ -87,8 +87,16 @@ export default function HomePage({ }: HomePageProps) {
 
 
   const filteredSignals = useMemo(() => {
-    // Main page doesn't filter by date
+    const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+
     return signals.filter((signal) => {
+      const signalTime = new Date(signal.time).getTime();
+      const isRecentEnough = signalTime >= oneWeekAgo; 
+
+      if (!isRecentEnough) {
+        return false; // Exclude signals older than one week from the main page
+      }
+
       const searchTermMatch = signal.ticker.toLowerCase().includes(filters.searchTerm.toLowerCase());
       const actionMatch = filters.action === 'all' || signal.action === filters.action;
       
