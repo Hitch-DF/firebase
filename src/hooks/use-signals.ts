@@ -5,7 +5,7 @@ import type { Signal, SignalCategory } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { addGlobalFavoriteTicker, isTickerGloballyFavorited, removeGlobalFavoriteTicker } from '@/lib/favorites';
 
-const WEBHOOK_SECRET = process.env.NEXT_PUBLIC_WEBHOOK_SECRET || 'your-secret-token'; // Use an env var for actual secret
+const WEBHOOK_SECRET = process.env.NEXT_PUBLIC_WEBHOOK_SECRET || 'your-secret-token'; 
 
 async function fetchSignals(): Promise<Signal[]> {
   const res = await fetch('/api/signals');
@@ -13,22 +13,28 @@ async function fetchSignals(): Promise<Signal[]> {
     const errorData = await res.json().catch(() => ({ message: 'Failed to fetch signals' }));
     throw new Error(errorData.message || 'Failed to fetch signals');
   }
-  return res.json();
+  const signals: Signal[] = await res.json();
+  // Ensure client-side favorite status matches global ticker preference after fetch
+  return signals.map(signal => ({
+    ...signal,
+    isFavorite: isTickerGloballyFavorited(signal.ticker),
+  }));
 }
 
 export function useSignals() {
   return useQuery<Signal[], Error>({
     queryKey: ['signals'],
     queryFn: fetchSignals,
-    // refetchInterval: 30000, // Optional: Poll every 30 seconds
+    // refetchInterval: 30000, 
   });
 }
 
 export async function addSignal(newSignalData: Omit<Signal, 'id' | 'time'> & { time?: string }): Promise<Signal> {
   const signalPayload = {
     ...newSignalData,
-    time: newSignalData.time || new Date().toISOString(), // Ensure time is set
-    isFavorite: newSignalData.isFavorite || false, // Default isFavorite
+    time: newSignalData.time || new Date().toISOString(),
+    // New signals automatically get favorited if their ticker is globally favorited
+    isFavorite: isTickerGloballyFavorited(newSignalData.ticker) || false,
   };
 
   const res = await fetch('/api/signals', {
@@ -62,8 +68,8 @@ export function useSignalActions() {
   
   const simulateWebhook = async (signalData: Omit<Signal, 'id' | 'time'> & { time?: string; category: SignalCategory }) => {
     try {
-      const isGloballyFav = isTickerGloballyFavorited(signalData.ticker);
-      await addSignal({ ...signalData, isFavorite: isGloballyFav || false });
+      // addSignal will handle the global favorite check
+      await addSignal(signalData); 
       queryClient.invalidateQueries({ queryKey: ['signals'] });
       toast({
         title: "Webhook simulé avec succès",
@@ -79,14 +85,12 @@ export function useSignalActions() {
     }
   };
 
-  const toggleFavoriteSignal = async (signalId: string, currentIsFavorite: boolean) => {
-    const newIsFavorite = !currentIsFavorite;
+  const toggleFavoriteSignal = async (signalIdToIdentifyTicker: string) => {
+    const currentSignals = queryClient.getQueryData<Signal[]>(['signals']);
+    const relevantSignal = currentSignals?.find(s => s.id === signalIdToIdentifyTicker);
 
-    const signals = queryClient.getQueryData<Signal[]>(['signals']);
-    const signalToToggle = signals?.find(s => s.id === signalId);
-
-    if (!signalToToggle) {
-        console.error("Signal not found for toggling favorite:", signalId);
+    if (!relevantSignal) {
+        console.error("Signal not found for toggling favorite:", signalIdToIdentifyTicker);
         toast({
             variant: "destructive",
             title: "Erreur",
@@ -94,59 +98,70 @@ export function useSignalActions() {
         });
         return;
     }
-    const ticker = signalToToggle.ticker;
 
-    // Optimistic update
+    const ticker = relevantSignal.ticker;
+    const currentGlobalFavoriteStateForTicker = isTickerGloballyFavorited(ticker);
+    const newGlobalFavoriteStateForTicker = !currentGlobalFavoriteStateForTicker;
+
+    // Optimistic update on the client for all signals of this ticker
     queryClient.setQueryData(['signals'], (oldData: Signal[] | undefined) => {
       if (!oldData) return [];
-      return oldData.map(signal =>
-        signal.id === signalId ? { ...signal, isFavorite: newIsFavorite } : signal
+      return oldData.map(s => 
+        s.ticker === ticker ? { ...s, isFavorite: newGlobalFavoriteStateForTicker } : s
       );
     });
 
+    // Update localStorage for the ticker's global favorite status
+    if (newGlobalFavoriteStateForTicker) {
+      addGlobalFavoriteTicker(ticker);
+    } else {
+      removeGlobalFavoriteTicker(ticker);
+    }
+
     try {
-      const response = await fetch(`/api/signals/${signalId}/favorite`, {
+      // API call to update all signals for this ticker on the server
+      const response = await fetch(`/api/signals/ticker/${ticker}/favorite-all`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ isFavorite: newIsFavorite }),
+        body: JSON.stringify({ isFavorite: newGlobalFavoriteStateForTicker }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to update favorite status' }));
-        throw new Error(errorData.message || 'Failed to update favorite status');
+        const errorData = await response.json().catch(() => ({ message: `Failed to update global favorite status for ${ticker}` }));
+        throw new Error(errorData.message || `Failed to update global favorite status for ${ticker}`);
       }
       
-      // Manage global favorite tickers
-      if (newIsFavorite) {
-        addGlobalFavoriteTicker(ticker);
-      } else {
-        // If un-favoriting this specific signal, remove the ticker from global favorites.
-        // This means the user has to explicitly favorite another signal of this ticker
-        // to make it "sticky" again for future signals.
-        removeGlobalFavoriteTicker(ticker);
-      }
-      
+      // Invalidate to refetch from server and ensure consistency.
+      // The fetchSignals function will re-apply global favorites on fetch.
       queryClient.invalidateQueries({ queryKey: ['signals'] });
 
       toast({
-        title: "Watchlist mise à jour",
-        description: `Signal ${newIsFavorite ? 'ajouté à' : 'retiré de'} la watchlist. ${ticker} ${newIsFavorite ? 'sera' : 'ne sera plus'} automatiquement favori.`,
+        title: "Watchlist Globale Mise à Jour",
+        description: `Tous les signaux pour ${ticker} sont maintenant ${newGlobalFavoriteStateForTicker ? 'dans la watchlist' : 'hors de la watchlist'}.`,
       });
+
     } catch (error) {
-      console.error("Error toggling favorite:", error);
+      console.error(`Error toggling global favorite for ticker ${ticker}:`, error);
       // Rollback optimistic update on error
       queryClient.setQueryData(['signals'], (oldData: Signal[] | undefined) => {
         if (!oldData) return [];
-        return oldData.map(signal =>
-          signal.id === signalId ? { ...signal, isFavorite: currentIsFavorite } : signal 
+        return oldData.map(s => 
+          s.ticker === ticker ? { ...s, isFavorite: currentGlobalFavoriteStateForTicker } : s // Revert to old global state
         );
       });
+      // Rollback localStorage
+      if (newGlobalFavoriteStateForTicker) { // if we tried to set it to true, roll back by removing
+        removeGlobalFavoriteTicker(ticker);
+      } else { // if we tried to set it to false, roll back by adding
+        addGlobalFavoriteTicker(ticker);
+      }
+
       toast({
         variant: "destructive",
-        title: "Erreur Watchlist",
-        description: (error as Error).message || "Impossible de mettre à jour le favori.",
+        title: "Erreur Watchlist Globale",
+        description: (error as Error).message || "Impossible de mettre à jour la watchlist globale.",
       });
     }
   };

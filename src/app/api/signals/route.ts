@@ -3,8 +3,8 @@ import type { Signal, SignalCategory } from '@/lib/types';
 import { z } from 'zod';
 import { randomUUID } from 'crypto';
 
-// In-memory store for signals (replace with a database in production)
-// Exporting for use in other API routes (e.g., favorite toggle) - this is a simplification for in-memory store.
+// In-memory store for signals 
+// Exporting for use in other API routes.
 export let signals: Signal[] = [
   { id: randomUUID(), ticker: 'BTCUSDT', price: 68500.75, time: new Date(Date.now() - 5 * 60 * 1000).toISOString(), action: 'buy', category: 'crypto', isFavorite: false },
   { id: randomUUID(), ticker: 'ETHUSDT', price: 3600.20, time: new Date(Date.now() - 10 * 60 * 1000).toISOString(), action: 'sell', category: 'crypto', isFavorite: false },
@@ -18,15 +18,16 @@ const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'your-secret-token'; // Sto
 const signalSchema = z.object({
   ticker: z.string().min(1, "Ticker est requis"),
   price: z.number().positive("Le prix doit être positif"),
-  time: z.string().datetime("Format de date invalide").optional(), // TradingView might send this, or we generate it
+  time: z.string().datetime("Format de date invalide").optional(),
   action: z.enum(['buy', 'sell'], { message: "L'action doit être 'buy' ou 'sell'" }),
   category: z.enum(['crypto', 'forex', 'commodities'], { message: "La catégorie doit être 'crypto', 'forex', ou 'commodities'" }),
-  isFavorite: z.boolean().optional(), // Allow isFavorite to be passed, default to false
+  isFavorite: z.boolean().optional(), 
 });
 
 export async function GET(request: NextRequest) {
   try {
-    // Sort signals by time descending (newest first)
+    // Client-side will apply global favorites after fetching.
+    // Server returns the raw `isFavorite` status from the in-memory store.
     const sortedSignals = [...signals].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
     return NextResponse.json(sortedSignals);
   } catch (error) {
@@ -36,7 +37,6 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  // Basic Webhook Security: Check for a secret token
   const providedSecret = request.headers.get('X-Webhook-Secret');
   if (providedSecret !== WEBHOOK_SECRET) {
     console.warn("Unauthorized webhook attempt. Provided secret:", providedSecret);
@@ -54,6 +54,9 @@ export async function POST(request: NextRequest) {
     const { ticker, price, action, category } = parsedSignal.data;
     const time = parsedSignal.data.time || new Date().toISOString();
 
+    // For direct webhook POSTs, isFavorite will be what's sent or default to false.
+    // The client's `addSignal` function (used by `simulateWebhook`) correctly sets
+    // `isFavorite` based on global ticker preferences before POSTing.
     const newSignal: Signal = {
       id: randomUUID(),
       ticker: ticker.toUpperCase(),
@@ -61,22 +64,20 @@ export async function POST(request: NextRequest) {
       time,
       action,
       category,
-      isFavorite: parsedSignal.data.isFavorite || false, // Default to false if not provided
+      isFavorite: parsedSignal.data.isFavorite || false,
     };
 
-    signals.unshift(newSignal); // Add to the beginning of the array for newest first (if not sorting on GET)
-    // Optional: Limit the number of stored signals to prevent memory issues
-    if (signals.length > 200) { // Example limit
+    signals.unshift(newSignal); 
+    if (signals.length > 200) { 
         signals = signals.slice(0, 200);
     }
-
 
     console.log("New signal received and stored:", newSignal);
     return NextResponse.json(newSignal, { status: 201 });
 
   } catch (error) {
     console.error('Error processing webhook:', error);
-    if (error instanceof SyntaxError) { // JSON parsing error
+    if (error instanceof SyntaxError) { 
         return NextResponse.json({ message: 'Invalid JSON payload' }, { status: 400 });
     }
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
