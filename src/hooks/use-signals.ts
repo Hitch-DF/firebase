@@ -3,6 +3,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Signal, SignalCategory } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { addGlobalFavoriteTicker, isTickerGloballyFavorited, removeGlobalFavoriteTicker } from '@/lib/favorites';
 
 const WEBHOOK_SECRET = process.env.NEXT_PUBLIC_WEBHOOK_SECRET || 'your-secret-token'; // Use an env var for actual secret
 
@@ -61,8 +62,8 @@ export function useSignalActions() {
   
   const simulateWebhook = async (signalData: Omit<Signal, 'id' | 'time'> & { time?: string; category: SignalCategory }) => {
     try {
-      // Ensure isFavorite is explicitly false for new simulated signals, or rely on addSignal to default it
-      await addSignal({ ...signalData, isFavorite: false });
+      const isGloballyFav = isTickerGloballyFavorited(signalData.ticker);
+      await addSignal({ ...signalData, isFavorite: isGloballyFav || false });
       queryClient.invalidateQueries({ queryKey: ['signals'] });
       toast({
         title: "Webhook simulé avec succès",
@@ -81,6 +82,20 @@ export function useSignalActions() {
   const toggleFavoriteSignal = async (signalId: string, currentIsFavorite: boolean) => {
     const newIsFavorite = !currentIsFavorite;
 
+    const signals = queryClient.getQueryData<Signal[]>(['signals']);
+    const signalToToggle = signals?.find(s => s.id === signalId);
+
+    if (!signalToToggle) {
+        console.error("Signal not found for toggling favorite:", signalId);
+        toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Signal non trouvé.",
+        });
+        return;
+    }
+    const ticker = signalToToggle.ticker;
+
     // Optimistic update
     queryClient.setQueryData(['signals'], (oldData: Signal[] | undefined) => {
       if (!oldData) return [];
@@ -94,7 +109,6 @@ export function useSignalActions() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          // No 'X-Webhook-Secret' needed here, this is a user action from client
         },
         body: JSON.stringify({ isFavorite: newIsFavorite }),
       });
@@ -104,13 +118,21 @@ export function useSignalActions() {
         throw new Error(errorData.message || 'Failed to update favorite status');
       }
       
-      // Invalidate to refetch from server and ensure consistency.
-      // If the server returns the updated object, we could also use that to update the cache.
+      // Manage global favorite tickers
+      if (newIsFavorite) {
+        addGlobalFavoriteTicker(ticker);
+      } else {
+        // If un-favoriting this specific signal, remove the ticker from global favorites.
+        // This means the user has to explicitly favorite another signal of this ticker
+        // to make it "sticky" again for future signals.
+        removeGlobalFavoriteTicker(ticker);
+      }
+      
       queryClient.invalidateQueries({ queryKey: ['signals'] });
 
       toast({
         title: "Watchlist mise à jour",
-        description: `Signal ${newIsFavorite ? 'ajouté à' : 'retiré de'} la watchlist.`,
+        description: `Signal ${newIsFavorite ? 'ajouté à' : 'retiré de'} la watchlist. ${ticker} ${newIsFavorite ? 'sera' : 'ne sera plus'} automatiquement favori.`,
       });
     } catch (error) {
       console.error("Error toggling favorite:", error);
@@ -118,7 +140,7 @@ export function useSignalActions() {
       queryClient.setQueryData(['signals'], (oldData: Signal[] | undefined) => {
         if (!oldData) return [];
         return oldData.map(signal =>
-          signal.id === signalId ? { ...signal, isFavorite: currentIsFavorite } : signal // Revert to original state
+          signal.id === signalId ? { ...signal, isFavorite: currentIsFavorite } : signal 
         );
       });
       toast({
