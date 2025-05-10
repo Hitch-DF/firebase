@@ -31,9 +31,6 @@ const translations = {
 
 type TranslationKey = keyof typeof translations.fr;
 
-// This component doesn't manage language directly.
-// It will use a hardcoded language for now, similar to HomePage.
-// Ideally, language should come from a context provided by AppLayout.
 const CURRENT_LANGUAGE = 'fr'; // Placeholder
 
 export default function HistoryPage() {
@@ -44,6 +41,7 @@ export default function HistoryPage() {
     searchTerm: '',
     action: 'all',
     category: 'all', 
+    selectedDate: undefined, // Initialize selectedDate
   });
 
   const t = useCallback((key: TranslationKey) => {
@@ -51,11 +49,10 @@ export default function HistoryPage() {
   }, []);
 
   const filteredSignals = useMemo(() => {
-    // The API already sorts signals by time descending.
-    // Additional client-side sorting can be done by SignalTable.
     return signals.filter((signal) => {
       const searchTermMatch = signal.ticker.toLowerCase().includes(filters.searchTerm.toLowerCase());
       const actionMatch = filters.action === 'all' || signal.action === filters.action;
+      
       let categoryMatch = false;
       if (filters.category === 'all') {
         categoryMatch = true;
@@ -64,7 +61,12 @@ export default function HistoryPage() {
       } else {
         categoryMatch = signal.category === filters.category;
       }
-      return searchTermMatch && actionMatch && categoryMatch;
+
+      // Date filtering logic
+      const dateMatch = !filters.selectedDate || 
+        (new Date(signal.time).toDateString() === new Date(filters.selectedDate).toDateString());
+        
+      return searchTermMatch && actionMatch && categoryMatch && dateMatch;
     });
   }, [signals, filters]);
 
@@ -73,7 +75,6 @@ export default function HistoryPage() {
   };
 
   return (
-    // Main container for the entire page content, centered with max-width
     <div className="mx-auto max-w-6xl space-y-6 p-4 md:p-6 bg-card rounded-lg shadow-md">
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
         <h1 className="text-2xl font-semibold">{t('pageTitle')}</h1>
@@ -87,7 +88,6 @@ export default function HistoryPage() {
         onFilterChange={setFilters} 
         initialFilters={filters} 
         language={CURRENT_LANGUAGE}
-        // searchPlaceholder={t('searchPlaceholder')} 
       />
 
       <SignalTable 
@@ -99,9 +99,8 @@ export default function HistoryPage() {
         loadingText={t('loadingSignals')}
         noSignalsText={t('noSignals')}
         errorLoadingText={t('errorLoadingSignals')}
-        isHistoryView={true} // Indicate this is the history view
+        isHistoryView={true}
       />
     </div>
   );
 }
-

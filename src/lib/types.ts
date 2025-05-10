@@ -16,6 +16,7 @@ export interface Filters {
   searchTerm: string;
   action: 'all' | 'buy' | 'sell';
   category: FilterCategoryOption;
+  selectedDate?: Date; // Added for date filtering
 }
 
 export type SortKey = keyof Signal | '';
