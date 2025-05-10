@@ -8,7 +8,7 @@ import { SignalFilters } from '@/components/signals/signal-filters';
 import { useSignals, useSignalActions } from '@/hooks/use-signals';
 import type { Filters, Signal, SignalCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, MessageSquarePlus, UserCircle } from 'lucide-react'; // MessageSquarePlus for simulate webhook, UserCircle for auth
+import { RefreshCw, MessageSquarePlus, UserCircle } from 'lucide-react'; 
 import { AiConnectionStatus } from '@/components/common/ai-connection-status';
 
 function Header() {
@@ -20,9 +20,9 @@ function Header() {
             SignalStream
           </h1>
         </div>
-        <div className="flex flex-col items-center sm:items-end gap-2">
+        <div className="flex flex-col items-center sm:items-end gap-1"> {/* Reduced gap-2 to gap-1 for tighter packing */}
           <div className="flex items-center gap-4">
-            <AiConnectionStatus />
+            {/* AiConnectionStatus was here, now moved below */}
             <Button asChild variant="outline" size="sm">
               <Link href="/auth">
                 <UserCircle className="mr-2 h-4 w-4" />
@@ -33,6 +33,10 @@ function Header() {
           <p className="text-sm text-muted-foreground text-center sm:text-right">
             Vos signaux de trading en temps réel
           </p>
+           {/* Moved AiConnectionStatus here */}
+          <div className="mt-1 sm:mt-0 w-full flex justify-center sm:justify-end">
+            <AiConnectionStatus />
+          </div>
         </div>
       </div>
     </header>
@@ -41,7 +45,7 @@ function Header() {
 
 export default function HomePage() {
   const { data: signals = [], isLoading, error, refetch } = useSignals();
-  const { simulateWebhook, toggleFavoriteSignal } = useSignalActions(); // Added toggleFavoriteSignal
+  const { simulateWebhook, toggleFavoriteSignal } = useSignalActions(); 
   const [filters, setFilters] = useState<Filters>({
     searchTerm: '',
     action: 'all',
@@ -99,8 +103,6 @@ export default function HomePage() {
       price: randomPrice,
       action: randomAction,
       category: randomCategory,
-      // time will be set by addSignal if not provided
-      // isFavorite will be defaulted to false by addSignal/API
     });
   };
 
@@ -129,7 +131,7 @@ export default function HomePage() {
           signals={filteredSignals} 
           isLoading={isLoading} 
           error={error}
-          onToggleFavorite={toggleFavoriteSignal} // Pass the handler
+          onToggleFavorite={toggleFavoriteSignal} 
         />
       </main>
       <footer className="text-center py-4 text-sm text-muted-foreground border-t">
