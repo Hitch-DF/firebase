@@ -82,24 +82,26 @@ export default function HistoryPage() {
         </Button>
       </div>
 
-      <SignalFilters 
-        onFilterChange={setFilters} 
-        initialFilters={filters} 
-        language={CURRENT_LANGUAGE}
-        // searchPlaceholder={t('searchPlaceholder')} 
-      />
+      <div className="mx-auto max-w-6xl">
+        <SignalFilters 
+          onFilterChange={setFilters} 
+          initialFilters={filters} 
+          language={CURRENT_LANGUAGE}
+          // searchPlaceholder={t('searchPlaceholder')} 
+        />
 
-      <SignalTable 
-        signals={filteredSignals} 
-        isLoading={isLoading} 
-        error={error}
-        onToggleFavorite={toggleFavoriteSignal} 
-        language={CURRENT_LANGUAGE}
-        loadingText={t('loadingSignals')}
-        noSignalsText={t('noSignals')}
-        errorLoadingText={t('errorLoadingSignals')}
-        isHistoryView={true} // Indicate this is the history view
-      />
+        <SignalTable 
+          signals={filteredSignals} 
+          isLoading={isLoading} 
+          error={error}
+          onToggleFavorite={toggleFavoriteSignal} 
+          language={CURRENT_LANGUAGE}
+          loadingText={t('loadingSignals')}
+          noSignalsText={t('noSignals')}
+          errorLoadingText={t('errorLoadingSignals')}
+          isHistoryView={true} // Indicate this is the history view
+        />
+      </div>
     </div>
   );
 }
