@@ -2,12 +2,13 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { SignalTable } from '@/components/signals/signal-table';
 import { SignalFilters } from '@/components/signals/signal-filters';
 import { useSignals, useSignalActions } from '@/hooks/use-signals';
 import type { Filters, Signal, SignalCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, MessageSquarePlus } from 'lucide-react'; // MessageSquarePlus for simulate webhook
+import { RefreshCw, MessageSquarePlus, UserCircle } from 'lucide-react'; // MessageSquarePlus for simulate webhook, UserCircle for auth
 import { AiConnectionStatus } from '@/components/common/ai-connection-status';
 
 function Header() {
@@ -19,11 +20,19 @@ function Header() {
             SignalStream
           </h1>
         </div>
-        <div className="flex flex-col items-center text-center sm:items-end sm:text-right gap-1">
-          <p className="text-sm text-muted-foreground">
+        <div className="flex flex-col items-center sm:items-end gap-2">
+          <div className="flex items-center gap-4">
+            <AiConnectionStatus />
+            <Button asChild variant="outline" size="sm">
+              <Link href="/auth">
+                <UserCircle className="mr-2 h-4 w-4" />
+                Connexion / Inscription
+              </Link>
+            </Button>
+          </div>
+          <p className="text-sm text-muted-foreground text-center sm:text-right">
             Vos signaux de trading en temps réel
           </p>
-          <AiConnectionStatus />
         </div>
       </div>
     </header>
@@ -129,3 +138,4 @@ export default function HomePage() {
     </div>
   );
 }
+
