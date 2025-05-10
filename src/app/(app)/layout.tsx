@@ -2,7 +2,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import Link from 'next/link';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/app-sidebar';
@@ -12,6 +12,7 @@ import { LanguageToggle } from '@/components/common/language-toggle';
 import { Button } from '@/components/ui/button';
 import { UserCircle } from 'lucide-react';
 import { OnlySignalsLogo } from '@/components/common/only-signals-logo';
+import { useLanguage } from '@/contexts/language-context'; // Import useLanguage
 
 // Define translations for the header within this layout
 const headerTranslations = {
@@ -28,8 +29,11 @@ const headerTranslations = {
 type HeaderTranslationKey = keyof typeof headerTranslations.fr;
 
 // This Header will be used within the SidebarInset
-function AppHeader({ language, onToggleLanguage }: { language: 'fr' | 'en', onToggleLanguage: () => void}) {
-  const tHeader = useCallback((key: HeaderTranslationKey) => headerTranslations[language][key] || headerTranslations.fr[key], [language]);
+function AppHeader() {
+  const { language, toggleLanguage } = useLanguage(); // Use context
+  const tHeader = useCallback((key: HeaderTranslationKey) => {
+    return headerTranslations[language][key] || headerTranslations.en[key]; 
+  }, [language]);
 
   return (
     <header className="bg-card shadow-sm sticky top-0 z-30 border-b">
@@ -41,7 +45,7 @@ function AppHeader({ language, onToggleLanguage }: { language: 'fr' | 'en', onTo
         </div>
         <div className="flex flex-col items-end gap-1">
           <div className="flex items-center gap-2">
-            <LanguageToggle currentLanguage={language} onToggleLanguage={onToggleLanguage} />
+            <LanguageToggle currentLanguage={language} onToggleLanguage={toggleLanguage} />
             <ThemeToggle />
             <Button asChild variant="outline" size="sm">
               <Link href="/auth">
@@ -64,18 +68,14 @@ function AppHeader({ language, onToggleLanguage }: { language: 'fr' | 'en', onTo
 
 
 export default function AppLayout({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<'fr' | 'en'>('fr');
-
-  const toggleLanguage = () => {
-    setLanguage(prevLang => prevLang === 'fr' ? 'en' : 'fr');
-  };
+  const { language } = useLanguage(); // Get language from context for AppSidebar and footer
 
   return (
     <SidebarProvider defaultOpen={true}> {/* DefaultOpen true for desktop, mobile handled by Sheet */}
       <div className="flex min-h-screen bg-background">
         <AppSidebar language={language} />
         <SidebarInset className="flex-1 flex flex-col">
-          <AppHeader language={language} onToggleLanguage={toggleLanguage} />
+          <AppHeader /> {/* AppHeader will use context */}
           <main className="flex-grow container mx-auto px-4 py-8">
             {children}
           </main>

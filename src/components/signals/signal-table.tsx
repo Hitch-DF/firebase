@@ -119,7 +119,7 @@ export function SignalTable({
 }: SignalTableProps) {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'time', direction: 'desc' });
   
-  const t = useCallback((key: TranslationKey) => translations[language][key] || translations.fr[key], [language]);
+  const t = useCallback((key: TranslationKey) => translations[language][key] || translations.en[key], [language]);
 
   const categoryDisplay: Record<SignalCategory, string> = {
     crypto: t('categoryCrypto'),
@@ -282,4 +282,3 @@ export function SignalTable({
     </>
   );
 }
-

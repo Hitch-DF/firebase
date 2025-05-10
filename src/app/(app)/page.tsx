@@ -1,13 +1,14 @@
 
 'use client';
 
-import { useState, useMemo, useCallback, useContext } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { SignalTable } from '@/components/signals/signal-table';
 import { SignalFilters } from '@/components/signals/signal-filters';
 import { useSignals, useSignalActions } from '@/hooks/use-signals';
 import type { Filters, Signal, SignalCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, MessageSquarePlus } from 'lucide-react'; 
+import { useLanguage } from '@/contexts/language-context';
 
 // Define translations, assuming language state is handled by the layout
 const translations = {
@@ -33,14 +34,12 @@ const translations = {
 
 type TranslationKey = keyof typeof translations.fr;
 
-interface HomePageProps {
-  // language is managed by AppLayout
-}
 
-
-export default function HomePage({ }: HomePageProps) {
+export default function HomePage() {
   const { data: signals = [], isLoading, error, refetch } = useSignals();
   const { simulateWebhook, toggleFavoriteSignal } = useSignalActions(); 
+  const { language } = useLanguage();
+  
   const [filters, setFilters] = useState<Filters>({
     searchTerm: '',
     action: 'all',
@@ -50,11 +49,8 @@ export default function HomePage({ }: HomePageProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(15);
 
-  const language = 'fr'; // Placeholder: this should come from AppLayout via props or context.
-
   const t = useCallback((key: TranslationKey) => {
-    const currentLanguage = language; 
-    return translations[currentLanguage][key] || translations.fr[key];
+    return translations[language][key] || translations.en[key];
   }, [language]);
 
 

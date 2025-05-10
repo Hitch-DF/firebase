@@ -136,4 +136,3 @@ export function AppSidebar({ language }: AppSidebarProps) {
     </Sidebar>
   );
 }
-

@@ -38,7 +38,7 @@ export function AiConnectionStatus({ language }: AiConnectionStatusProps) {
     return () => clearTimeout(timer);
   }, []); 
 
-  const t = useCallback((key: TranslationKey) => translations[language][key] || translations.fr[key], [language]);
+  const t = useCallback((key: TranslationKey) => translations[language][key] || translations.en[key], [language]);
 
   return (
     <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground" data-testid="ai-connection-status">

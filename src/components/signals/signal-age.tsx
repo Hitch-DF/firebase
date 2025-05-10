@@ -26,7 +26,7 @@ type TranslationKey = keyof typeof translations.fr;
 export function SignalAge({ timestamp, language }: SignalAgeProps) {
   const [age, setAge] = useState<string>('');
 
-  const t = useCallback((key: TranslationKey) => translations[language][key] || translations.fr[key], [language]);
+  const t = useCallback((key: TranslationKey) => translations[language][key] || translations.en[key], [language]);
 
   useEffect(() => {
     let isMounted = true;

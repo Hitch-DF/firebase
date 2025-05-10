@@ -73,7 +73,7 @@ export function SignalFilters({
   language, 
   showDatePicker = false // Default to false
 }: SignalFiltersProps) {
-  const t = useCallback((key: TranslationKey) => translations[language][key] || translations.fr[key], [language]);
+  const t = useCallback((key: TranslationKey) => translations[language][key] || translations.en[key], [language]);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     onFilterChange({ ...initialFilters, searchTerm: event.target.value });
@@ -162,4 +162,3 @@ export function SignalFilters({
     </div>
   );
 }
-

@@ -8,6 +8,7 @@ import { useSignals, useSignalActions } from '@/hooks/use-signals';
 import type { Filters, Signal, SignalCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
+import { useLanguage } from '@/contexts/language-context';
 
 // Define translations for this page
 const translations = {
@@ -31,11 +32,11 @@ const translations = {
 
 type TranslationKey = keyof typeof translations.fr;
 
-const CURRENT_LANGUAGE = 'fr'; // Placeholder
 
 export default function HistoryPage() {
   const { data: signals = [], isLoading, error, refetch } = useSignals();
   const { toggleFavoriteSignal } = useSignalActions(); 
+  const { language } = useLanguage();
   
   const [filters, setFilters] = useState<Filters>({
     searchTerm: '',
@@ -48,8 +49,8 @@ export default function HistoryPage() {
   const [itemsPerPage, setItemsPerPage] = useState(15);
 
   const t = useCallback((key: TranslationKey) => {
-    return translations[CURRENT_LANGUAGE][key] || translations.en[key];
-  }, []);
+    return translations[language][key] || translations.en[key];
+  }, [language]);
 
   const filteredSignals = useMemo(() => {
     return signals.filter((signal) => {
@@ -93,7 +94,7 @@ export default function HistoryPage() {
           setCurrentPage(1); // Reset to first page on filter change
         }} 
         initialFilters={filters} 
-        language={CURRENT_LANGUAGE}
+        language={language}
         showDatePicker={true} 
       />
 
@@ -102,7 +103,7 @@ export default function HistoryPage() {
         isLoading={isLoading} 
         error={error}
         onToggleFavorite={toggleFavoriteSignal} 
-        language={CURRENT_LANGUAGE}
+        language={language}
         loadingText={t('loadingSignals')}
         noSignalsText={t('noSignals')}
         errorLoadingText={t('errorLoadingSignals')}
