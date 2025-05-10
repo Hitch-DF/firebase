@@ -11,12 +11,16 @@ interface LanguageToggleProps {
 }
 
 export function LanguageToggle({ currentLanguage, onToggleLanguage }: LanguageToggleProps) {
-  const nextLanguageDisplay = currentLanguage === 'fr' ? 'ENG' : 'FR';
+  // Button text now shows the current language abbreviation
+  const buttonDisplayText = currentLanguage === 'fr' ? 'FR' : 'ENG';
+  // Aria-label indicates which language it will switch to
+  const switchToLanguageDisplay = currentLanguage === 'fr' ? 'English' : 'Français'; 
   
   return (
-    <Button variant="outline" size="sm" onClick={onToggleLanguage} aria-label={`Switch to ${nextLanguageDisplay}`}>
+    <Button variant="outline" size="sm" onClick={onToggleLanguage} aria-label={`Passer en ${switchToLanguageDisplay}`}>
       <Globe className="h-4 w-4 mr-2" />
-      {nextLanguageDisplay}
+      {buttonDisplayText}
     </Button>
   );
 }
+
