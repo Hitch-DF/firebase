@@ -10,6 +10,7 @@ import type { Filters, Signal, SignalCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, MessageSquarePlus, UserCircle } from 'lucide-react'; 
 import { AiConnectionStatus } from '@/components/common/ai-connection-status';
+import { ThemeToggle } from '@/components/common/theme-toggle'; // Import ThemeToggle
 
 function Header() {
   return (
@@ -20,9 +21,9 @@ function Header() {
             SignalStream
           </h1>
         </div>
-        <div className="flex flex-col items-center sm:items-end gap-1"> {/* Reduced gap-2 to gap-1 for tighter packing */}
-          <div className="flex items-center gap-4">
-            {/* AiConnectionStatus was here, now moved below */}
+        <div className="flex flex-col items-center sm:items-end gap-1">
+          <div className="flex items-center gap-2"> {/* Changed gap-4 to gap-2 */}
+            <ThemeToggle /> {/* Add ThemeToggle here */}
             <Button asChild variant="outline" size="sm">
               <Link href="/auth">
                 <UserCircle className="mr-2 h-4 w-4" />
@@ -33,7 +34,6 @@ function Header() {
           <p className="text-sm text-muted-foreground text-center sm:text-right">
             Vos signaux de trading en temps réel
           </p>
-           {/* Moved AiConnectionStatus here */}
           <div className="mt-1 sm:mt-0 w-full flex justify-center sm:justify-end">
             <AiConnectionStatus />
           </div>
