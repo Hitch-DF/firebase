@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { SignalTable } from '@/components/signals/signal-table';
 import { SignalFilters } from '@/components/signals/signal-filters';
 import { useSignals, useSignalActions } from '@/hooks/use-signals';
-import type { Filters, Signal } from '@/lib/types';
+import type { Filters, Signal, SignalCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, MessageSquarePlus } from 'lucide-react'; // MessageSquarePlus for simulate webhook
 
@@ -25,17 +25,19 @@ function Header() {
 
 export default function HomePage() {
   const { data: signals = [], isLoading, error, refetch } = useSignals();
-  const { simulateWebhook } = useSignalActions(); // Using simulateWebhook for testing
+  const { simulateWebhook } = useSignalActions();
   const [filters, setFilters] = useState<Filters>({
     searchTerm: '',
     action: 'all',
+    category: 'all',
   });
 
   const filteredSignals = useMemo(() => {
     return signals.filter((signal) => {
       const searchTermMatch = signal.ticker.toLowerCase().includes(filters.searchTerm.toLowerCase());
       const actionMatch = filters.action === 'all' || signal.action === filters.action;
-      return searchTermMatch && actionMatch;
+      const categoryMatch = filters.category === 'all' || signal.category === filters.category;
+      return searchTermMatch && actionMatch && categoryMatch;
     });
   }, [signals, filters]);
 
@@ -44,14 +46,34 @@ export default function HomePage() {
   };
   
   const handleSimulateRandomSignal = () => {
-    const randomTicker = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'ADAUSDT', 'DOTUSDT'][Math.floor(Math.random() * 5)];
-    const randomPrice = parseFloat((Math.random() * 70000 + 1000).toFixed(2));
+    const categories: SignalCategory[] = ['crypto', 'forex', 'commodities'];
+    const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+    
+    let randomTicker = '';
+    let randomPrice = 0;
+
+    switch (randomCategory) {
+      case 'crypto':
+        randomTicker = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'ADAUSDT', 'DOTUSDT'][Math.floor(Math.random() * 5)];
+        randomPrice = parseFloat((Math.random() * 70000 + 1000).toFixed(2));
+        break;
+      case 'forex':
+        randomTicker = ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD'][Math.floor(Math.random() * 5)];
+        randomPrice = parseFloat((Math.random() * 1.5 + 0.8).toFixed(4));
+        break;
+      case 'commodities':
+        randomTicker = ['XAUUSD', 'XAGUSD', 'USOIL', 'UKOIL', 'NATGAS'][Math.floor(Math.random() * 5)];
+        randomPrice = parseFloat((Math.random() * 2500 + 50).toFixed(2));
+        break;
+    }
+    
     const randomAction = Math.random() > 0.5 ? 'buy' : 'sell';
     
     simulateWebhook({
       ticker: randomTicker,
       price: randomPrice,
       action: randomAction,
+      category: randomCategory,
       // time will be set by addSignal if not provided
     });
   };

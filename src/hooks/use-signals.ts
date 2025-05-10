@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import type { Signal } from '@/lib/types';
+import type { Signal, SignalCategory } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
 const WEBHOOK_SECRET = process.env.NEXT_PUBLIC_WEBHOOK_SECRET || 'your-secret-token'; // Use an env var for actual secret
@@ -60,13 +60,13 @@ export function useSignalActions() {
   
   // This function is for testing purposes, to simulate a webhook call from the client-side
   // In a real scenario, webhooks are received by the server endpoint directly.
-  const simulateWebhook = async (signalData: Omit<Signal, 'id' | 'time'> & { time?: string }) => {
+  const simulateWebhook = async (signalData: Omit<Signal, 'id' | 'time'> & { time?: string; category: SignalCategory }) => {
     try {
       await addSignal(signalData);
       queryClient.invalidateQueries({ queryKey: ['signals'] });
       toast({
         title: "Webhook simulé avec succès",
-        description: `Signal ${signalData.action} pour ${signalData.ticker} ajouté.`,
+        description: `Signal ${signalData.action} pour ${signalData.ticker} (${signalData.category}) ajouté.`,
       });
     } catch (error) {
       console.error("Error simulating webhook:", error);

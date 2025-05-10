@@ -1,6 +1,6 @@
 'use client';
 
-import type { Signal, SortConfig, SortKey } from '@/lib/types';
+import type { Signal, SortConfig, SortKey, SignalCategory } from '@/lib/types';
 import {
   Table,
   TableHeader,
@@ -13,8 +13,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SignalAge } from './signal-age';
 import Link from 'next/link';
-import { ExternalLink, ArrowUpDown, TrendingUp, TrendingDown } from 'lucide-react';
+import { ExternalLink, ArrowUpDown, TrendingUp, TrendingDown, Tag } from 'lucide-react';
 import { useState, useMemo } from 'react';
+import { cn } from '@/lib/utils';
 
 interface SignalTableProps {
   signals: Signal[];
@@ -44,6 +45,11 @@ const SortableHeader = ({
   </TableHead>
 );
 
+const categoryDisplay: Record<SignalCategory, string> = {
+  crypto: "Crypto",
+  forex: "Forex",
+  commodities: "Matières Prem.",
+};
 
 export function SignalTable({ signals, isLoading, error }: SignalTableProps) {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'time', direction: 'desc' });
@@ -102,11 +108,12 @@ export function SignalTable({ signals, isLoading, error }: SignalTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <SortableHeader onClick={() => requestSort('ticker')} sortKey="ticker" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>Crypto</SortableHeader>
+            <SortableHeader onClick={() => requestSort('ticker')} sortKey="ticker" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>Actif</SortableHeader>
             <SortableHeader onClick={() => requestSort('price')} sortKey="price" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>Prix</SortableHeader>
             <SortableHeader onClick={() => requestSort('time')} sortKey="time" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>Date et Heure</SortableHeader>
             <TableHead>Âge du Signal</TableHead>
             <SortableHeader onClick={() => requestSort('action')} sortKey="action" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>Signal</SortableHeader>
+            <SortableHeader onClick={() => requestSort('category')} sortKey="category" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>Catégorie</SortableHeader>
             <TableHead>Graphique</TableHead>
           </TableRow>
         </TableHeader>
@@ -122,10 +129,19 @@ export function SignalTable({ signals, isLoading, error }: SignalTableProps) {
               <TableCell>
                 <Badge
                   variant={signal.action === 'buy' ? 'default' : 'destructive'}
-                  className={signal.action === 'buy' ? 'bg-green-500/20 text-green-700 border-green-500/30 dark:bg-green-700/30 dark:text-green-300 dark:border-green-700/40' : 'bg-red-500/20 text-red-700 border-red-500/30 dark:bg-red-700/30 dark:text-red-300 dark:border-red-700/40'}
+                  className={cn(
+                    signal.action === 'buy' ? 'bg-green-500/20 text-green-700 border-green-500/30 dark:bg-green-700/30 dark:text-green-300 dark:border-green-700/40' 
+                                          : 'bg-red-500/20 text-red-700 border-red-500/30 dark:bg-red-700/30 dark:text-red-300 dark:border-red-700/40'
+                  )}
                 >
                   {signal.action === 'buy' ? <TrendingUp className="mr-1 h-4 w-4" /> : <TrendingDown className="mr-1 h-4 w-4" />}
                   {signal.action === 'buy' ? 'Achat' : 'Vente'}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  <Tag className="h-3 w-3" />
+                  {categoryDisplay[signal.category] || signal.category}
                 </Badge>
               </TableCell>
               <TableCell>

@@ -1,13 +1,15 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import type { Signal } from '@/lib/types';
+import type { Signal, SignalCategory } from '@/lib/types';
 import { z } from 'zod';
 import { randomUUID } from 'crypto';
 
 // In-memory store for signals (replace with a database in production)
 let signals: Signal[] = [
-  { id: randomUUID(), ticker: 'BTCUSDT', price: 68500.75, time: new Date(Date.now() - 5 * 60 * 1000).toISOString(), action: 'buy' },
-  { id: randomUUID(), ticker: 'ETHUSDT', price: 3600.20, time: new Date(Date.now() - 10 * 60 * 1000).toISOString(), action: 'sell' },
-  { id: randomUUID(), ticker: 'SOLUSDT', price: 150.50, time: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), action: 'buy' },
+  { id: randomUUID(), ticker: 'BTCUSDT', price: 68500.75, time: new Date(Date.now() - 5 * 60 * 1000).toISOString(), action: 'buy', category: 'crypto' },
+  { id: randomUUID(), ticker: 'ETHUSDT', price: 3600.20, time: new Date(Date.now() - 10 * 60 * 1000).toISOString(), action: 'sell', category: 'crypto' },
+  { id: randomUUID(), ticker: 'SOLUSDT', price: 150.50, time: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), action: 'buy', category: 'crypto' },
+  { id: randomUUID(), ticker: 'EURUSD', price: 1.0850, time: new Date(Date.now() - 15 * 60 * 1000).toISOString(), action: 'sell', category: 'forex' },
+  { id: randomUUID(), ticker: 'XAUUSD', price: 2350.00, time: new Date(Date.now() - 30 * 60 * 1000).toISOString(), action: 'buy', category: 'commodities' },
 ];
 
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'your-secret-token'; // Store this securely!
@@ -17,6 +19,7 @@ const signalSchema = z.object({
   price: z.number().positive("Le prix doit être positif"),
   time: z.string().datetime("Format de date invalide").optional(), // TradingView might send this, or we generate it
   action: z.enum(['buy', 'sell'], { message: "L'action doit être 'buy' ou 'sell'" }),
+  category: z.enum(['crypto', 'forex', 'commodities'], { message: "La catégorie doit être 'crypto', 'forex', ou 'commodities'" }),
 });
 
 export async function GET(request: NextRequest) {
@@ -46,7 +49,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Invalid signal data', errors: parsedSignal.error.flatten().fieldErrors }, { status: 400 });
     }
 
-    const { ticker, price, action } = parsedSignal.data;
+    const { ticker, price, action, category } = parsedSignal.data;
     const time = parsedSignal.data.time || new Date().toISOString();
 
     const newSignal: Signal = {
@@ -55,6 +58,7 @@ export async function POST(request: NextRequest) {
       price,
       time,
       action,
+      category,
     };
 
     signals.unshift(newSignal); // Add to the beginning of the array for newest first (if not sorting on GET)
