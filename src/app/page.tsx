@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -7,17 +8,23 @@ import { useSignals, useSignalActions } from '@/hooks/use-signals';
 import type { Filters, Signal, SignalCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, MessageSquarePlus } from 'lucide-react'; // MessageSquarePlus for simulate webhook
+import { AiConnectionStatus } from '@/components/common/ai-connection-status';
 
 function Header() {
   return (
     <header className="bg-card shadow-sm sticky top-0 z-40">
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-primary">
-          SignalStream
-        </h1>
-        <p className="text-sm text-muted-foreground hidden sm:block">
-          Vos signaux de trading en temps réel
-        </p>
+      <div className="container mx-auto px-4 py-3 sm:py-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+        <div className="text-center sm:text-left">
+          <h1 className="text-2xl font-bold text-primary">
+            SignalStream
+          </h1>
+        </div>
+        <div className="flex flex-col items-center text-center sm:items-end sm:text-right gap-1">
+          <p className="text-sm text-muted-foreground">
+            Vos signaux de trading en temps réel
+          </p>
+          <AiConnectionStatus />
+        </div>
       </div>
     </header>
   );
