@@ -1,4 +1,3 @@
-
 'use client';
 
 import type { Signal, SortConfig, SortKey, SignalCategory } from '@/lib/types';
@@ -171,71 +170,78 @@ export function SignalTable({
   }
 
   return (
-    <div className="rounded-lg border shadow-sm overflow-hidden bg-card">
-      <Table>
-        <TableHeader>
-          <TableRow>
-             <SortableHeader onClick={() => requestSort('isFavorite')} sortKey="isFavorite" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('favHeader')}</SortableHeader>
-            <SortableHeader onClick={() => requestSort('ticker')} sortKey="ticker" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('assetHeader')}</SortableHeader>
-            <SortableHeader onClick={() => requestSort('price')} sortKey="price" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('priceHeader')}</SortableHeader>
-            <SortableHeader onClick={() => requestSort('time')} sortKey="time" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('dateTimeHeader')}</SortableHeader>
-            <TableHead>{t('ageHeader')}</TableHead>
-            <SortableHeader onClick={() => requestSort('action')} sortKey="action" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('signalHeader')}</SortableHeader>
-            <SortableHeader onClick={() => requestSort('category')} sortKey="category" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('categoryHeader')}</SortableHeader>
-            <TableHead>{t('chartHeader')}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {sortedSignals.map((signal) => (
-            <TableRow key={signal.id} data-testid={`signal-row-${signal.id}`} className="hover:bg-muted/50 transition-colors">
-              <TableCell>
-                <Star
-                  className={cn(
-                    "h-5 w-5 cursor-pointer transition-all duration-150 ease-in-out",
-                    signal.isFavorite 
-                      ? "fill-yellow-400 text-yellow-500 scale-110" 
-                      : "text-muted-foreground hover:text-yellow-400 hover:scale-110"
-                  )}
-                  onClick={() => onToggleFavorite(signal.id)}
-                  aria-label={signal.isFavorite ? t('removeFromWatchlist') : t('addToWatchlist')}
-                />
-              </TableCell>
-              <TableCell className="font-medium">{signal.ticker}</TableCell>
-              <TableCell>${signal.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 })}</TableCell>
-              <TableCell>{new Date(signal.time).toLocaleString(language === 'fr' ? 'fr-FR' : 'en-US')}</TableCell>
-              <TableCell>
-                <SignalAge timestamp={signal.time} language={language} />
-              </TableCell>
-              <TableCell>
-                <Badge
-                  variant={signal.action === 'buy' ? 'default' : 'destructive'}
-                  className={cn(
-                    "font-semibold",
-                    signal.action === 'buy' ? 'bg-green-500/20 text-green-700 border-green-500/30 dark:bg-green-700/30 dark:text-green-300 dark:border-green-700/40' 
-                                          : 'bg-red-500/20 text-red-700 border-red-500/30 dark:bg-red-700/30 dark:text-red-300 dark:border-red-700/40'
-                  )}
-                >
-                  {signal.action === 'buy' ? <TrendingUp className="mr-1 h-4 w-4" /> : <TrendingDown className="mr-1 h-4 w-4" />}
-                  {signal.action === 'buy' ? t('buyAction') : t('sellAction')}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  <Tag className="h-3 w-3" />
-                  {categoryDisplay[signal.category] || signal.category}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <Button variant="outline" size="sm" asChild>
-                  <Link href={`https://www.tradingview.com/chart/?symbol=${signal.ticker}`} target="_blank" rel="noopener noreferrer">
-                    {t('viewChartButton')} <ExternalLink className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </TableCell>
+    <div
+      className="rounded-lg border shadow-sm overflow-hidden bg-cover bg-center"
+      style={{ backgroundImage: 'url("https://i.imgur.com/Nj3cL8H.png")' }}
+      data-ai-hint="abstract data"
+    >
+      <div className="bg-card/80 dark:bg-card/70 backdrop-blur-sm rounded-lg">
+        <Table>
+          <TableHeader>
+            <TableRow>
+               <SortableHeader onClick={() => requestSort('isFavorite')} sortKey="isFavorite" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('favHeader')}</SortableHeader>
+              <SortableHeader onClick={() => requestSort('ticker')} sortKey="ticker" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('assetHeader')}</SortableHeader>
+              <SortableHeader onClick={() => requestSort('price')} sortKey="price" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('priceHeader')}</SortableHeader>
+              <SortableHeader onClick={() => requestSort('time')} sortKey="time" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('dateTimeHeader')}</SortableHeader>
+              <TableHead>{t('ageHeader')}</TableHead>
+              <SortableHeader onClick={() => requestSort('action')} sortKey="action" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('signalHeader')}</SortableHeader>
+              <SortableHeader onClick={() => requestSort('category')} sortKey="category" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('categoryHeader')}</SortableHeader>
+              <TableHead>{t('chartHeader')}</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {sortedSignals.map((signal) => (
+              <TableRow key={signal.id} data-testid={`signal-row-${signal.id}`} className="hover:bg-muted/50 transition-colors">
+                <TableCell>
+                  <Star
+                    className={cn(
+                      "h-5 w-5 cursor-pointer transition-all duration-150 ease-in-out",
+                      signal.isFavorite 
+                        ? "fill-yellow-400 text-yellow-500 scale-110" 
+                        : "text-muted-foreground hover:text-yellow-400 hover:scale-110"
+                    )}
+                    onClick={() => onToggleFavorite(signal.id)}
+                    aria-label={signal.isFavorite ? t('removeFromWatchlist') : t('addToWatchlist')}
+                  />
+                </TableCell>
+                <TableCell className="font-medium">{signal.ticker}</TableCell>
+                <TableCell>${signal.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 })}</TableCell>
+                <TableCell>{new Date(signal.time).toLocaleString(language === 'fr' ? 'fr-FR' : 'en-US')}</TableCell>
+                <TableCell>
+                  <SignalAge timestamp={signal.time} language={language} />
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    variant={signal.action === 'buy' ? 'default' : 'destructive'}
+                    className={cn(
+                      "font-semibold",
+                      signal.action === 'buy' ? 'bg-green-500/20 text-green-700 border-green-500/30 dark:bg-green-700/30 dark:text-green-300 dark:border-green-700/40' 
+                                            : 'bg-red-500/20 text-red-700 border-red-500/30 dark:bg-red-700/30 dark:text-red-300 dark:border-red-700/40'
+                    )}
+                  >
+                    {signal.action === 'buy' ? <TrendingUp className="mr-1 h-4 w-4" /> : <TrendingDown className="mr-1 h-4 w-4" />}
+                    {signal.action === 'buy' ? t('buyAction') : t('sellAction')}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <Tag className="h-3 w-3" />
+                    {categoryDisplay[signal.category] || signal.category}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`https://www.tradingview.com/chart/?symbol=${signal.ticker}`} target="_blank" rel="noopener noreferrer">
+                      {t('viewChartButton')} <ExternalLink className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
+
