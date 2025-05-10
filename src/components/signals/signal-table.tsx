@@ -17,7 +17,7 @@ import Link from 'next/link';
 import { ExternalLink, ArrowUpDown, TrendingUp, TrendingDown, Tag, Star } from 'lucide-react';
 import { useState, useMemo, useCallback } from 'react';
 import { cn } from '@/lib/utils';
-import { PaginationControls } from './pagination-controls'; // Added import
+import { PaginationControls } from './pagination-controls'; 
 
 interface SignalTableProps {
   signals: Signal[];
@@ -194,18 +194,7 @@ export function SignalTable({
 
   return (
     <>
-      <PaginationControls
-        currentPage={currentPage}
-        totalPages={totalPages > 0 ? totalPages : 1}
-        onPageChange={onPageChange}
-        itemsPerPage={itemsPerPage}
-        onItemsPerPageChange={(newSize) => {
-          onItemsPerPageChange(newSize);
-          onPageChange(1); // Reset to first page
-        }}
-        totalItems={totalItems}
-        language={language}
-      />
+      {/* PaginationControls removed from here */}
       <div className="rounded-lg border shadow-sm overflow-hidden bg-card">
         <Table>
           <TableHeader>
@@ -293,3 +282,4 @@ export function SignalTable({
     </>
   );
 }
+
