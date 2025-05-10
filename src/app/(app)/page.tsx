@@ -33,22 +33,8 @@ const translations = {
 
 type TranslationKey = keyof typeof translations.fr;
 
-// A simple way to pass language from layout, or use a context
-// For now, assuming it might come from props or a context if Header is removed.
-// This page component itself does not manage language state directly.
-// The language state is managed by AppLayout. For components inside this page,
-// they would need the language prop passed down.
-// For demonstration, this page will assume 'fr' or get it passed.
-// It's better if AppLayout provides language via context or passes it to children if they need it.
-// Let's assume the AppLayout will provide the language to children that need it,
-// for now this page will depend on its props for language or default.
-
 interface HomePageProps {
-  // language could be passed as a prop from a context in AppLayout
-  // For simplicity, we'll use the language from the AppLayout's state via its children rendering
-  // But the `t` function here would need access to it.
-  // The `AppLayout` now manages language state. This page component doesn't.
-  // The translations here are for this page's content.
+  // language is managed by AppLayout
 }
 
 
@@ -59,42 +45,28 @@ export default function HomePage({ }: HomePageProps) {
     searchTerm: '',
     action: 'all',
     category: 'all',
-    // selectedDate is not used on the main page, so it can be omitted or undefined
   });
 
-  // This component doesn't manage language directly.
-  // For its own text, it needs to know the current language.
-  // We'll assume a default or make `t` function rely on a prop/context later if needed.
-  // Since AppLayout handles language and passes it to AppHeader,
-  // this page's specific texts need to be aware. For now, hardcode 'fr' for `t` or expect prop.
-  // To use the language from AppLayout, we'd need to pass it down or use context.
-  // The `language` prop is removed from this page, as AppLayout handles it.
-  // For SignalFilters and SignalTable, they expect a language prop.
-  // This page would need to get the language from its parent (AppLayout).
-  // This creates a prop-drilling issue. A React Context for language is better.
-  // For now, I'll pass a 'fr' default to sub-components that need it.
-  // This should be improved with a LanguageContext provided by AppLayout.
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(15);
+
   const language = 'fr'; // Placeholder: this should come from AppLayout via props or context.
 
   const t = useCallback((key: TranslationKey) => {
-    // This is a simplified 't' function. In a real app, use a i18n library or context.
-    // It needs access to the current language state.
-    // For now, it will use the hardcoded 'language' variable above.
-    // When `AppLayout` provides language via context, this `t` would consume it.
-    const currentLanguage = language; // Access the language state from AppLayout
+    const currentLanguage = language; 
     return translations[currentLanguage][key] || translations.fr[key];
   }, [language]);
 
 
   const filteredSignals = useMemo(() => {
-    const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+    const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000; 
 
     return signals.filter((signal) => {
       const signalTime = new Date(signal.time).getTime();
       const isRecentEnough = signalTime >= oneWeekAgo; 
 
       if (!isRecentEnough) {
-        return false; // Exclude signals older than one week from the main page
+        return false; 
       }
 
       const searchTermMatch = signal.ticker.toLowerCase().includes(filters.searchTerm.toLowerCase());
@@ -115,6 +87,7 @@ export default function HomePage({ }: HomePageProps) {
 
   const handleRefresh = () => {
     refetch();
+    setCurrentPage(1); // Reset to first page on refresh
   };
   
   const handleSimulateRandomSignal = () => {
@@ -149,7 +122,6 @@ export default function HomePage({ }: HomePageProps) {
     });
   };
 
-  // The main page content, Header is now in AppLayout
   return (
     <>
       <div className="flex justify-between items-center mb-6">
@@ -168,23 +140,30 @@ export default function HomePage({ }: HomePageProps) {
         <MessageSquarePlus className="mr-2 h-4 w-4" /> {t('simulateRandomSignalButton')}
       </Button>
       <SignalFilters 
-        onFilterChange={setFilters} 
+        onFilterChange={(newFilters) => {
+          setFilters(newFilters);
+          setCurrentPage(1); // Reset to first page on filter change
+        }} 
         initialFilters={filters} 
-        language={language} // Needs current language
-        showDatePicker={false} // Date picker not needed on main page
+        language={language} 
+        showDatePicker={false} 
       />
       <SignalTable 
         signals={filteredSignals} 
         isLoading={isLoading} 
         error={error}
         onToggleFavorite={toggleFavoriteSignal} 
-        language={language} // Needs current language
+        language={language} 
         loadingText={t('loadingSignals')}
         noSignalsText={t('noSignals')}
         errorLoadingText={t('errorLoadingSignals')}
-        isHistoryView={false} // Explicitly false for main page
+        isHistoryView={false}
+        currentPage={currentPage}
+        itemsPerPage={itemsPerPage}
+        totalItems={filteredSignals.length}
+        onPageChange={setCurrentPage}
+        onItemsPerPageChange={setItemsPerPage}
       />
     </>
   );
 }
-

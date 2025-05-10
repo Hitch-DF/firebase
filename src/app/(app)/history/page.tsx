@@ -44,6 +44,9 @@ export default function HistoryPage() {
     selectedDate: undefined,
   });
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(15);
+
   const t = useCallback((key: TranslationKey) => {
     return translations[CURRENT_LANGUAGE][key] || translations.en[key];
   }, []);
@@ -71,6 +74,7 @@ export default function HistoryPage() {
 
   const handleRefresh = () => {
     refetch();
+    setCurrentPage(1); // Reset to first page on refresh
   };
 
   return (
@@ -84,10 +88,13 @@ export default function HistoryPage() {
       </div>
 
       <SignalFilters 
-        onFilterChange={setFilters} 
+        onFilterChange={(newFilters) => {
+          setFilters(newFilters);
+          setCurrentPage(1); // Reset to first page on filter change
+        }} 
         initialFilters={filters} 
         language={CURRENT_LANGUAGE}
-        showDatePicker={true} // Ensure date picker is shown for history page
+        showDatePicker={true} 
       />
 
       <SignalTable 
@@ -100,8 +107,12 @@ export default function HistoryPage() {
         noSignalsText={t('noSignals')}
         errorLoadingText={t('errorLoadingSignals')}
         isHistoryView={true}
+        currentPage={currentPage}
+        itemsPerPage={itemsPerPage}
+        totalItems={filteredSignals.length}
+        onPageChange={setCurrentPage}
+        onItemsPerPageChange={setItemsPerPage}
       />
     </div>
   );
 }
-

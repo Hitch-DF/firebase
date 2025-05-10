@@ -17,6 +17,7 @@ import Link from 'next/link';
 import { ExternalLink, ArrowUpDown, TrendingUp, TrendingDown, Tag, Star } from 'lucide-react';
 import { useState, useMemo, useCallback } from 'react';
 import { cn } from '@/lib/utils';
+import { PaginationControls } from './pagination-controls'; // Added import
 
 interface SignalTableProps {
   signals: Signal[];
@@ -27,7 +28,13 @@ interface SignalTableProps {
   loadingText: string;
   noSignalsText: string;
   errorLoadingText: string;
-  isHistoryView?: boolean; // New prop
+  isHistoryView?: boolean;
+  // Pagination props
+  currentPage: number;
+  itemsPerPage: number;
+  totalItems: number;
+  onPageChange: (page: number) => void;
+  onItemsPerPageChange: (items: number) => void;
 }
 
 const translations = {
@@ -104,6 +111,11 @@ export function SignalTable({
   noSignalsText,
   errorLoadingText,
   isHistoryView = false, 
+  currentPage,
+  itemsPerPage,
+  totalItems,
+  onPageChange,
+  onItemsPerPageChange,
 }: SignalTableProps) {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'time', direction: 'desc' });
   
@@ -116,7 +128,7 @@ export function SignalTable({
   };
 
   const sortedSignals = useMemo(() => {
-    let sortableItems = [...signals];
+    let sortableItems = [...signals]; // Use the full signals list passed from parent
     if (sortConfig.key) {
       sortableItems.sort((a, b) => {
         if (sortConfig.key === 'isFavorite') {
@@ -142,12 +154,20 @@ export function SignalTable({
     return sortableItems;
   }, [signals, sortConfig]);
 
+  const paginatedSignals = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return sortedSignals.slice(startIndex, startIndex + itemsPerPage);
+  }, [sortedSignals, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+
   const requestSort = (key: SortKey) => {
     let direction: 'asc' | 'desc' = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
       direction = 'desc';
     }
     setSortConfig({ key, direction });
+    onPageChange(1); // Reset to first page on sort
   };
 
   if (isLoading) {
@@ -168,81 +188,108 @@ export function SignalTable({
     );
   }
   
-  if (sortedSignals.length === 0) {
+  if (totalItems === 0) { // Check totalItems instead of sortedSignals.length for pagination
     return <div className="text-center py-10 px-4 bg-card border rounded-lg shadow-sm"><p className="text-muted-foreground">{noSignalsText}</p></div>;
   }
 
   return (
-    <div className="rounded-lg border shadow-sm overflow-hidden bg-card">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <SortableHeader onClick={() => requestSort('isFavorite')} sortKey="isFavorite" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('favHeader')}</SortableHeader>
-            <SortableHeader onClick={() => requestSort('ticker')} sortKey="ticker" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('assetHeader')}</SortableHeader>
-            <SortableHeader onClick={() => requestSort('price')} sortKey="price" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('priceHeader')}</SortableHeader>
-            <SortableHeader onClick={() => requestSort('time')} sortKey="time" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('dateTimeHeader')}</SortableHeader>
-            {!isHistoryView && <TableHead>{t('ageHeader')}</TableHead>}
-            <SortableHeader onClick={() => requestSort('action')} sortKey="action" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('signalHeader')}</SortableHeader>
-            <SortableHeader onClick={() => requestSort('category')} sortKey="category" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('categoryHeader')}</SortableHeader>
-            {!isHistoryView && <TableHead>{t('chartHeader')}</TableHead>}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {sortedSignals.map((signal) => (
-            <TableRow key={signal.id} data-testid={`signal-row-${signal.id}`} className="hover:bg-muted/50 transition-colors">
-              <TableCell>
-                <Star
-                  className={cn(
-                    "h-5 w-5 cursor-pointer transition-all duration-150 ease-in-out",
-                    signal.isFavorite 
-                      ? "fill-yellow-400 text-yellow-500 scale-110" 
-                      : "text-muted-foreground hover:text-yellow-400 hover:scale-110"
-                  )}
-                  onClick={() => onToggleFavorite(signal.id)}
-                  aria-label={signal.isFavorite ? t('removeFromWatchlist') : t('addToWatchlist')}
-                />
-              </TableCell>
-              <TableCell className="font-medium">{signal.ticker}</TableCell>
-              <TableCell>${signal.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 })}</TableCell>
-              <TableCell>{new Date(signal.time).toLocaleString(language === 'fr' ? 'fr-FR' : 'en-US')}</TableCell>
-              {!isHistoryView && (
-                <TableCell>
-                  <SignalAge timestamp={signal.time} language={language} />
-                </TableCell>
-              )}
-              <TableCell>
-                <Badge
-                  variant={signal.action === 'buy' ? 'default' : 'destructive'}
-                  className={cn(
-                    "font-semibold",
-                    signal.action === 'buy' ? 'bg-green-500/20 text-green-700 border-green-500/30 dark:bg-green-700/30 dark:text-green-300 dark:border-green-700/40' 
-                                          : 'bg-red-500/20 text-red-700 border-red-500/30 dark:bg-red-700/30 dark:text-red-300 dark:border-red-700/40'
-                  )}
-                >
-                  {signal.action === 'buy' ? <TrendingUp className="mr-1 h-4 w-4" /> : <TrendingDown className="mr-1 h-4 w-4" />}
-                  {signal.action === 'buy' ? t('buyAction') : t('sellAction')}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  <Tag className="h-3 w-3" />
-                  {categoryDisplay[signal.category] || signal.category}
-                </Badge>
-              </TableCell>
-              {!isHistoryView && (
-                <TableCell>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={`https://www.tradingview.com/chart/?symbol=${signal.ticker}`} target="_blank" rel="noopener noreferrer">
-                      {t('viewChartButton')} <ExternalLink className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                </TableCell>
-              )}
+    <>
+      <PaginationControls
+        currentPage={currentPage}
+        totalPages={totalPages > 0 ? totalPages : 1}
+        onPageChange={onPageChange}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={(newSize) => {
+          onItemsPerPageChange(newSize);
+          onPageChange(1); // Reset to first page
+        }}
+        totalItems={totalItems}
+        language={language}
+      />
+      <div className="rounded-lg border shadow-sm overflow-hidden bg-card">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <SortableHeader onClick={() => requestSort('isFavorite')} sortKey="isFavorite" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('favHeader')}</SortableHeader>
+              <SortableHeader onClick={() => requestSort('ticker')} sortKey="ticker" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('assetHeader')}</SortableHeader>
+              <SortableHeader onClick={() => requestSort('price')} sortKey="price" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('priceHeader')}</SortableHeader>
+              <SortableHeader onClick={() => requestSort('time')} sortKey="time" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('dateTimeHeader')}</SortableHeader>
+              {!isHistoryView && <TableHead>{t('ageHeader')}</TableHead>}
+              <SortableHeader onClick={() => requestSort('action')} sortKey="action" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('signalHeader')}</SortableHeader>
+              <SortableHeader onClick={() => requestSort('category')} sortKey="category" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('categoryHeader')}</SortableHeader>
+              {!isHistoryView && <TableHead>{t('chartHeader')}</TableHead>}
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </TableHeader>
+          <TableBody>
+            {paginatedSignals.map((signal) => (
+              <TableRow key={signal.id} data-testid={`signal-row-${signal.id}`} className="hover:bg-muted/50 transition-colors">
+                <TableCell>
+                  <Star
+                    className={cn(
+                      "h-5 w-5 cursor-pointer transition-all duration-150 ease-in-out",
+                      signal.isFavorite 
+                        ? "fill-yellow-400 text-yellow-500 scale-110" 
+                        : "text-muted-foreground hover:text-yellow-400 hover:scale-110"
+                    )}
+                    onClick={() => onToggleFavorite(signal.id)}
+                    aria-label={signal.isFavorite ? t('removeFromWatchlist') : t('addToWatchlist')}
+                  />
+                </TableCell>
+                <TableCell className="font-medium">{signal.ticker}</TableCell>
+                <TableCell>${signal.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 })}</TableCell>
+                <TableCell>{new Date(signal.time).toLocaleString(language === 'fr' ? 'fr-FR' : 'en-US')}</TableCell>
+                {!isHistoryView && (
+                  <TableCell>
+                    <SignalAge timestamp={signal.time} language={language} />
+                  </TableCell>
+                )}
+                <TableCell>
+                  <Badge
+                    variant={signal.action === 'buy' ? 'default' : 'destructive'}
+                    className={cn(
+                      "font-semibold",
+                      signal.action === 'buy' ? 'bg-green-500/20 text-green-700 border-green-500/30 dark:bg-green-700/30 dark:text-green-300 dark:border-green-700/40' 
+                                            : 'bg-red-500/20 text-red-700 border-red-500/30 dark:bg-red-700/30 dark:text-red-300 dark:border-red-700/40'
+                    )}
+                  >
+                    {signal.action === 'buy' ? <TrendingUp className="mr-1 h-4 w-4" /> : <TrendingDown className="mr-1 h-4 w-4" />}
+                    {signal.action === 'buy' ? t('buyAction') : t('sellAction')}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <Tag className="h-3 w-3" />
+                    {categoryDisplay[signal.category] || signal.category}
+                  </Badge>
+                </TableCell>
+                {!isHistoryView && (
+                  <TableCell>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href={`https://www.tradingview.com/chart/?symbol=${signal.ticker}`} target="_blank" rel="noopener noreferrer">
+                        {t('viewChartButton')} <ExternalLink className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </TableCell>
+                )}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+      { totalItems > 0 && ( // Only show bottom pagination if there are items
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages > 0 ? totalPages : 1}
+          onPageChange={onPageChange}
+          itemsPerPage={itemsPerPage}
+          onItemsPerPageChange={(newSize) => {
+            onItemsPerPageChange(newSize);
+            onPageChange(1); // Reset to first page
+          }}
+          totalItems={totalItems}
+          language={language}
+        />
+      )}
+    </>
   );
 }
-
