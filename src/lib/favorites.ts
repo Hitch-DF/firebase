@@ -1,6 +1,6 @@
 // src/lib/favorites.ts
 
-const GLOBAL_FAVORITE_TICKERS_KEY = 'globalFavoriteTickersSignalStream'; // Added Suffix to avoid potential conflicts
+const GLOBAL_FAVORITE_TICKERS_KEY = 'globalFavoriteTickersOnlySignals'; // Changed Suffix
 
 function getGlobalFavoriteTickers(): Set<string> {
   if (typeof window === 'undefined') {

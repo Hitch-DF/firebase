@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
@@ -11,7 +12,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'SignalStream - Vos Signaux de Trading en Temps Réel',
+  title: 'OnlySignals - Vos Signaux de Trading en Temps Réel',
   description: 'Collectez et visualisez les alertes webhook de TradingView en temps réel.',
 };
 

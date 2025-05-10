@@ -8,15 +8,16 @@ import { SignalFilters } from '@/components/signals/signal-filters';
 import { useSignals, useSignalActions } from '@/hooks/use-signals';
 import type { Filters, Signal, SignalCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, MessageSquarePlus, UserCircle, Globe } from 'lucide-react'; 
+import { RefreshCw, MessageSquarePlus, UserCircle } from 'lucide-react'; 
 import { AiConnectionStatus } from '@/components/common/ai-connection-status';
 import { ThemeToggle } from '@/components/common/theme-toggle';
 import { LanguageToggle } from '@/components/common/language-toggle'; // Import LanguageToggle
+import { OnlySignalsLogo } from '@/components/common/only-signals-logo';
 
 // Define translations
 const translations = {
   fr: {
-    pageTitle: "SignalStream",
+    pageTitle: "OnlySignals",
     pageSubtitle: "Vos signaux de trading en temps réel",
     authButton: "Connexion / Inscription",
     aiStatusConnected: "Connecté à l'IA",
@@ -25,13 +26,13 @@ const translations = {
     simulateSignalButton: "Simuler Signal",
     simulateRandomSignalButton: "Simuler Signal Aléatoire",
     refreshButton: "Rafraîchir",
-    footerText: `© ${new Date().getFullYear()} SignalStream. Tous droits réservés.`,
+    footerText: `© ${new Date().getFullYear()} OnlySignals. Tous droits réservés.`,
     loadingSignals: "Chargement des signaux...",
     noSignals: "Aucun signal à afficher pour le moment.",
     errorLoadingSignals: "Erreur de chargement des signaux:",
   },
   en: {
-    pageTitle: "SignalStream",
+    pageTitle: "OnlySignals",
     pageSubtitle: "Your real-time trading signals",
     authButton: "Login / Sign Up",
     aiStatusConnected: "Connected to AI",
@@ -40,7 +41,7 @@ const translations = {
     simulateSignalButton: "Simulate Signal",
     simulateRandomSignalButton: "Simulate Random Signal",
     refreshButton: "Refresh",
-    footerText: `© ${new Date().getFullYear()} SignalStream. All rights reserved.`,
+    footerText: `© ${new Date().getFullYear()} OnlySignals. All rights reserved.`,
     loadingSignals: "Loading signals...",
     noSignals: "No signals to display at the moment.",
     errorLoadingSignals: "Error loading signals:",
@@ -56,11 +57,9 @@ function Header({ language, onToggleLanguage }: { language: 'fr' | 'en', onToggl
   return (
     <header className="bg-card shadow-sm sticky top-0 z-40">
       <div className="container mx-auto px-4 py-3 sm:py-4 flex flex-col sm:flex-row justify-between items-center gap-2">
-        <div className="text-center sm:text-left">
-          <h1 className="text-2xl font-bold text-primary">
-            {t('pageTitle')}
-          </h1>
-        </div>
+        <Link href="/" className="flex items-center gap-2 group w-fit">
+          <OnlySignalsLogo className="h-8 w-auto text-primary transition-transform group-hover:scale-105" />
+        </Link>
         <div className="flex flex-col items-center sm:items-end gap-1">
           <div className="flex items-center gap-2">
             <LanguageToggle currentLanguage={language} onToggleLanguage={onToggleLanguage} />
@@ -196,3 +195,4 @@ export default function HomePage() {
     </div>
   );
 }
+
