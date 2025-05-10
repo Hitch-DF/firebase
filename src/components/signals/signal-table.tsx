@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { Signal, SortConfig, SortKey, SignalCategory } from '@/lib/types';
@@ -102,7 +103,7 @@ export function SignalTable({
   loadingText,
   noSignalsText,
   errorLoadingText,
-  isHistoryView = false, // Default to false
+  isHistoryView = false, 
 }: SignalTableProps) {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'time', direction: 'desc' });
   
@@ -123,7 +124,6 @@ export function SignalTable({
             const valB = b.isFavorite ? 1 : 0;
             if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
             if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
-            // Secondary sort by time if favorite status is the same
             return new Date(b.time).getTime() - new Date(a.time).getTime();
         }
 
@@ -138,11 +138,6 @@ export function SignalTable({
         }
         return 0;
       });
-    }
-    // Ensure default sort is by time descending if no sort key is active or if it's the initial state.
-    // This is particularly important for the history page.
-    if (!sortConfig.key || (sortConfig.key === 'time' && sortConfig.direction === 'desc')) {
-        // The API already sorts by time, but this reinforces it client-side if needed.
     }
     return sortableItems;
   }, [signals, sortConfig]);
@@ -182,14 +177,14 @@ export function SignalTable({
       <Table>
         <TableHeader>
           <TableRow>
-              <SortableHeader onClick={() => requestSort('isFavorite')} sortKey="isFavorite" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('favHeader')}</SortableHeader>
+            <SortableHeader onClick={() => requestSort('isFavorite')} sortKey="isFavorite" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('favHeader')}</SortableHeader>
             <SortableHeader onClick={() => requestSort('ticker')} sortKey="ticker" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('assetHeader')}</SortableHeader>
             <SortableHeader onClick={() => requestSort('price')} sortKey="price" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('priceHeader')}</SortableHeader>
             <SortableHeader onClick={() => requestSort('time')} sortKey="time" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('dateTimeHeader')}</SortableHeader>
             {!isHistoryView && <TableHead>{t('ageHeader')}</TableHead>}
             <SortableHeader onClick={() => requestSort('action')} sortKey="action" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('signalHeader')}</SortableHeader>
             <SortableHeader onClick={() => requestSort('category')} sortKey="category" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>{t('categoryHeader')}</SortableHeader>
-            <TableHead>{t('chartHeader')}</TableHead>
+            {!isHistoryView && <TableHead>{t('chartHeader')}</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -234,13 +229,15 @@ export function SignalTable({
                   {categoryDisplay[signal.category] || signal.category}
                 </Badge>
               </TableCell>
-              <TableCell>
-                <Button variant="outline" size="sm" asChild>
-                  <Link href={`https://www.tradingview.com/chart/?symbol=${signal.ticker}`} target="_blank" rel="noopener noreferrer">
-                    {t('viewChartButton')} <ExternalLink className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </TableCell>
+              {!isHistoryView && (
+                <TableCell>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`https://www.tradingview.com/chart/?symbol=${signal.ticker}`} target="_blank" rel="noopener noreferrer">
+                      {t('viewChartButton')} <ExternalLink className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>
@@ -248,3 +245,4 @@ export function SignalTable({
     </div>
   );
 }
+
