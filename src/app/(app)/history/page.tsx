@@ -41,7 +41,7 @@ export default function HistoryPage() {
     searchTerm: '',
     action: 'all',
     category: 'all', 
-    selectedDate: undefined, // Initialize selectedDate
+    selectedDate: undefined,
   });
 
   const t = useCallback((key: TranslationKey) => {
@@ -62,9 +62,8 @@ export default function HistoryPage() {
         categoryMatch = signal.category === filters.category;
       }
 
-      // Date filtering logic
       const dateMatch = !filters.selectedDate || 
-        (new Date(signal.time).toDateString() === new Date(filters.selectedDate).toDateString());
+        (new Date(signal.time).toDateString() === filters.selectedDate.toDateString());
         
       return searchTermMatch && actionMatch && categoryMatch && dateMatch;
     });
@@ -88,6 +87,7 @@ export default function HistoryPage() {
         onFilterChange={setFilters} 
         initialFilters={filters} 
         language={CURRENT_LANGUAGE}
+        showDatePicker={true} // Ensure date picker is shown for history page
       />
 
       <SignalTable 
@@ -104,3 +104,4 @@ export default function HistoryPage() {
     </div>
   );
 }
+

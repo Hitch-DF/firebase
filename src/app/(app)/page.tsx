@@ -59,6 +59,7 @@ export default function HomePage({ }: HomePageProps) {
     searchTerm: '',
     action: 'all',
     category: 'all',
+    // selectedDate is not used on the main page, so it can be omitted or undefined
   });
 
   // This component doesn't manage language directly.
@@ -86,6 +87,7 @@ export default function HomePage({ }: HomePageProps) {
 
 
   const filteredSignals = useMemo(() => {
+    // Main page doesn't filter by date
     return signals.filter((signal) => {
       const searchTermMatch = signal.ticker.toLowerCase().includes(filters.searchTerm.toLowerCase());
       const actionMatch = filters.action === 'all' || signal.action === filters.action;
@@ -161,6 +163,7 @@ export default function HomePage({ }: HomePageProps) {
         onFilterChange={setFilters} 
         initialFilters={filters} 
         language={language} // Needs current language
+        showDatePicker={false} // Date picker not needed on main page
       />
       <SignalTable 
         signals={filteredSignals} 
@@ -176,3 +179,4 @@ export default function HomePage({ }: HomePageProps) {
     </>
   );
 }
+

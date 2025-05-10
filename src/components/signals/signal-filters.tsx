@@ -15,11 +15,13 @@ import { useCallback } from 'react';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
+import { cn } from '@/lib/utils'; // Added import
 
 interface SignalFiltersProps {
   onFilterChange: (filters: Filters) => void;
   initialFilters: Filters;
   language: 'fr' | 'en';
+  showDatePicker?: boolean; // New prop to control date picker visibility
 }
 
 const translations = {
@@ -65,7 +67,12 @@ const translations = {
 
 type TranslationKey = keyof typeof translations.fr;
 
-export function SignalFilters({ onFilterChange, initialFilters, language }: SignalFiltersProps) {
+export function SignalFilters({ 
+  onFilterChange, 
+  initialFilters, 
+  language, 
+  showDatePicker = false // Default to false
+}: SignalFiltersProps) {
   const t = useCallback((key: TranslationKey) => translations[language][key] || translations.fr[key], [language]);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,7 +96,7 @@ export function SignalFilters({ onFilterChange, initialFilters, language }: Sign
   };
 
   return (
-    <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 border rounded-lg shadow-sm bg-card">
+    <div className={cn("mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 border rounded-lg shadow-sm bg-card", showDatePicker ? "lg:grid-cols-4" : "lg:grid-cols-3")}>
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
         <Input
@@ -133,23 +140,26 @@ export function SignalFilters({ onFilterChange, initialFilters, language }: Sign
           </SelectContent>
         </Select>
       </div>
-      <div className="flex items-center gap-2">
-        <CalendarDays className="h-5 w-5 text-muted-foreground" />
-        <div className="flex-grow">
-          <DatePicker
-            date={initialFilters.selectedDate}
-            setDate={handleDateChange}
-            placeholder={t('datePickerPlaceholder')}
-            language={language}
-            aria-label={t('dateFilterLabel')}
-          />
+      {showDatePicker && (
+        <div className="flex items-center gap-2">
+          <CalendarDays className="h-5 w-5 text-muted-foreground" />
+          <div className="flex-grow">
+            <DatePicker
+              date={initialFilters.selectedDate}
+              setDate={handleDateChange}
+              placeholder={t('datePickerPlaceholder')}
+              language={language}
+              aria-label={t('dateFilterLabel')}
+            />
+          </div>
+          {initialFilters.selectedDate && (
+            <Button variant="ghost" size="icon" onClick={clearDate} aria-label={t('clearDateFilter')} className="shrink-0">
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </div>
-        {initialFilters.selectedDate && (
-          <Button variant="ghost" size="icon" onClick={clearDate} aria-label={t('clearDateFilter')} className="shrink-0">
-            <X className="h-4 w-4" />
-          </Button>
-        )}
-      </div>
+      )}
     </div>
   );
 }
+
