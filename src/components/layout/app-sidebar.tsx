@@ -55,9 +55,9 @@ export function AppSidebar({ language }: AppSidebarProps) {
   const t = (key: keyof typeof translations.fr) => translations[language][key] || translations.en[key];
 
   const menuItems = [
-    { href: '/', label: t('onlySignalsAI'), icon: BarChart3, activePath: /^\/$/ },
-    { href: '/history', label: t('signalHistory'), icon: History, activePath: /^\/history/ },
-    { href: '#', label: t('communitySignal'), icon: Users, soon: true, activePath: /^\/community/ }, // Placeholder
+    { href: '/', label: t('onlySignalsAI'), icon: BarChart3, activePath: /^\/$/ }, // Matches exactly "/"
+    { href: '/history', label: t('signalHistory'), icon: History, activePath: /^\/history(\/.*)?$/ }, // Matches "/history" or "/history/..."
+    { href: '#', label: t('communitySignal'), icon: Users, soon: true, activePath: /^\/community(\/.*)?$/ }, // Placeholder
   ];
 
   // Convert French mobile number to international format for WhatsApp link

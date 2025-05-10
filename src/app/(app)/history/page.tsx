@@ -17,7 +17,6 @@ const translations = {
     loadingSignals: "Chargement de l'historique...",
     noSignals: "Aucun signal dans l'historique pour le moment.",
     errorLoadingSignals: "Erreur de chargement de l'historique:",
-    // Add any filter-specific translations if SignalFilters is used differently here
     searchPlaceholder: "Rechercher dans l'historique...",
   },
   en: {
@@ -32,15 +31,14 @@ const translations = {
 
 type TranslationKey = keyof typeof translations.fr;
 
-// Assume language is provided by AppLayout context or props
-// For now, hardcoding for demonstration
-const MOCK_LANGUAGE = 'fr'; 
+// This component doesn't manage language directly.
+// It will use a hardcoded language for now, similar to HomePage.
+// Ideally, language should come from a context provided by AppLayout.
+const CURRENT_LANGUAGE = 'fr'; // Placeholder
 
 export default function HistoryPage() {
-  // For now, use the same signal fetching logic. 
-  // In a real app, this might fetch from a different endpoint or apply different default filters.
   const { data: signals = [], isLoading, error, refetch } = useSignals();
-  const { toggleFavoriteSignal } = useSignalActions(); // toggleFavorite might still be relevant
+  const { toggleFavoriteSignal } = useSignalActions(); 
   
   const [filters, setFilters] = useState<Filters>({
     searchTerm: '',
@@ -49,11 +47,12 @@ export default function HistoryPage() {
   });
 
   const t = useCallback((key: TranslationKey) => {
-    return translations[MOCK_LANGUAGE][key] || translations.en[key];
+    return translations[CURRENT_LANGUAGE][key] || translations.en[key];
   }, []);
 
   const filteredSignals = useMemo(() => {
-    // Add any history-specific filtering if needed, e.g., date ranges
+    // History page might have different default sorting or additional date range filters in a real app.
+    // For now, it uses the same filtering logic as the main page.
     return signals.filter((signal) => {
       const searchTermMatch = signal.ticker.toLowerCase().includes(filters.searchTerm.toLowerCase());
       const actionMatch = filters.action === 'all' || signal.action === filters.action;
@@ -61,9 +60,6 @@ export default function HistoryPage() {
       if (filters.category === 'all') {
         categoryMatch = true;
       } else if (filters.category === 'watchlist') {
-        // Watchlist filter might apply differently to historical data
-        // or be based on the favorite status at the time of the signal if stored.
-        // For now, uses current favorite status.
         categoryMatch = !!signal.isFavorite; 
       } else {
         categoryMatch = signal.category === filters.category;
@@ -77,8 +73,8 @@ export default function HistoryPage() {
   };
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold">{t('pageTitle')}</h1>
         <Button onClick={handleRefresh} variant="default" size="sm">
           <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
@@ -86,12 +82,11 @@ export default function HistoryPage() {
         </Button>
       </div>
 
-      {/* You can reuse SignalFilters or create a specific one for history */}
       <SignalFilters 
         onFilterChange={setFilters} 
         initialFilters={filters} 
-        language={MOCK_LANGUAGE}
-        // Potentially adjust placeholder for search if needed
+        language={CURRENT_LANGUAGE}
+        // Example of how to customize placeholder if needed:
         // searchPlaceholder={t('searchPlaceholder')} 
       />
 
@@ -100,7 +95,7 @@ export default function HistoryPage() {
         isLoading={isLoading} 
         error={error}
         onToggleFavorite={toggleFavoriteSignal} 
-        language={MOCK_LANGUAGE}
+        language={CURRENT_LANGUAGE}
         loadingText={t('loadingSignals')}
         noSignalsText={t('noSignals')}
         errorLoadingText={t('errorLoadingSignals')}
@@ -108,3 +103,4 @@ export default function HistoryPage() {
     </div>
   );
 }
+
