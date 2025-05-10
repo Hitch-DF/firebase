@@ -65,7 +65,7 @@ export function AppSidebar({ language }: AppSidebarProps) {
       <SidebarHeader className="p-4 border-b border-sidebar-border">
         <div className="flex items-center gap-2 mb-1">
           <OnlySignalsLogo height={32} />
-          <span className="text-xl font-semibold text-sidebar-foreground">OnlySignals</span>
+          {/* Removed text "OnlySignals" */}
         </div>
         <span className="text-xs text-sidebar-foreground/70">{t('version')}</span>
       </SidebarHeader>
@@ -133,3 +133,4 @@ export function AppSidebar({ language }: AppSidebarProps) {
     </Sidebar>
   );
 }
+
