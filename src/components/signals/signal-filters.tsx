@@ -1,6 +1,6 @@
 'use client';
 
-import type { Filters, SignalCategory } from '@/lib/types';
+import type { Filters, SignalCategory, FilterCategoryOption } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, Filter as FilterIcon, Tag } from 'lucide-react'; // Added Tag icon for category
+import { Search, Filter as FilterIcon, Tag, Star } from 'lucide-react';
 
 interface SignalFiltersProps {
   onFilterChange: (filters: Filters) => void;
@@ -25,7 +25,7 @@ export function SignalFilters({ onFilterChange, initialFilters }: SignalFiltersP
     onFilterChange({ ...initialFilters, action: value });
   };
 
-  const handleCategoryChange = (value: 'all' | SignalCategory) => {
+  const handleCategoryChange = (value: FilterCategoryOption) => {
     onFilterChange({ ...initialFilters, category: value });
   };
 
@@ -63,6 +63,11 @@ export function SignalFilters({ onFilterChange, initialFilters }: SignalFiltersP
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Toutes catégories</SelectItem>
+            <SelectItem value="watchlist">
+                <div className="flex items-center">
+                    <Star className="mr-2 h-4 w-4 text-yellow-400 fill-yellow-400" /> Watchlist
+                </div>
+            </SelectItem>
             <SelectItem value="crypto">Crypto</SelectItem>
             <SelectItem value="forex">Forex</SelectItem>
             <SelectItem value="commodities">Matières premières</SelectItem>

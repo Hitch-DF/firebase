@@ -4,12 +4,13 @@ import { z } from 'zod';
 import { randomUUID } from 'crypto';
 
 // In-memory store for signals (replace with a database in production)
-let signals: Signal[] = [
-  { id: randomUUID(), ticker: 'BTCUSDT', price: 68500.75, time: new Date(Date.now() - 5 * 60 * 1000).toISOString(), action: 'buy', category: 'crypto' },
-  { id: randomUUID(), ticker: 'ETHUSDT', price: 3600.20, time: new Date(Date.now() - 10 * 60 * 1000).toISOString(), action: 'sell', category: 'crypto' },
-  { id: randomUUID(), ticker: 'SOLUSDT', price: 150.50, time: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), action: 'buy', category: 'crypto' },
-  { id: randomUUID(), ticker: 'EURUSD', price: 1.0850, time: new Date(Date.now() - 15 * 60 * 1000).toISOString(), action: 'sell', category: 'forex' },
-  { id: randomUUID(), ticker: 'XAUUSD', price: 2350.00, time: new Date(Date.now() - 30 * 60 * 1000).toISOString(), action: 'buy', category: 'commodities' },
+// Exporting for use in other API routes (e.g., favorite toggle) - this is a simplification for in-memory store.
+export let signals: Signal[] = [
+  { id: randomUUID(), ticker: 'BTCUSDT', price: 68500.75, time: new Date(Date.now() - 5 * 60 * 1000).toISOString(), action: 'buy', category: 'crypto', isFavorite: false },
+  { id: randomUUID(), ticker: 'ETHUSDT', price: 3600.20, time: new Date(Date.now() - 10 * 60 * 1000).toISOString(), action: 'sell', category: 'crypto', isFavorite: false },
+  { id: randomUUID(), ticker: 'SOLUSDT', price: 150.50, time: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), action: 'buy', category: 'crypto', isFavorite: false },
+  { id: randomUUID(), ticker: 'EURUSD', price: 1.0850, time: new Date(Date.now() - 15 * 60 * 1000).toISOString(), action: 'sell', category: 'forex', isFavorite: false },
+  { id: randomUUID(), ticker: 'XAUUSD', price: 2350.00, time: new Date(Date.now() - 30 * 60 * 1000).toISOString(), action: 'buy', category: 'commodities', isFavorite: false },
 ];
 
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'your-secret-token'; // Store this securely!
@@ -20,6 +21,7 @@ const signalSchema = z.object({
   time: z.string().datetime("Format de date invalide").optional(), // TradingView might send this, or we generate it
   action: z.enum(['buy', 'sell'], { message: "L'action doit être 'buy' ou 'sell'" }),
   category: z.enum(['crypto', 'forex', 'commodities'], { message: "La catégorie doit être 'crypto', 'forex', ou 'commodities'" }),
+  isFavorite: z.boolean().optional(), // Allow isFavorite to be passed, default to false
 });
 
 export async function GET(request: NextRequest) {
@@ -59,6 +61,7 @@ export async function POST(request: NextRequest) {
       time,
       action,
       category,
+      isFavorite: parsedSignal.data.isFavorite || false, // Default to false if not provided
     };
 
     signals.unshift(newSignal); // Add to the beginning of the array for newest first (if not sorting on GET)

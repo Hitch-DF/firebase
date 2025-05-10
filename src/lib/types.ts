@@ -7,12 +7,15 @@ export interface Signal {
   time: string; // ISO 8601 timestamp string
   action: 'buy' | 'sell';
   category: SignalCategory;
+  isFavorite?: boolean; // Added for watchlist feature
 }
+
+export type FilterCategoryOption = 'all' | SignalCategory | 'watchlist';
 
 export interface Filters {
   searchTerm: string;
   action: 'all' | 'buy' | 'sell';
-  category: 'all' | SignalCategory;
+  category: FilterCategoryOption;
 }
 
 export type SortKey = keyof Signal | '';

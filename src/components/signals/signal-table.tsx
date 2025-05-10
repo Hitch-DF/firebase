@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SignalAge } from './signal-age';
 import Link from 'next/link';
-import { ExternalLink, ArrowUpDown, TrendingUp, TrendingDown, Tag } from 'lucide-react';
+import { ExternalLink, ArrowUpDown, TrendingUp, TrendingDown, Tag, Star } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -21,6 +21,7 @@ interface SignalTableProps {
   signals: Signal[];
   isLoading: boolean;
   error: Error | null;
+  onToggleFavorite: (signalId: string, currentIsFavorite: boolean) => void;
 }
 
 const SortableHeader = ({
@@ -51,15 +52,25 @@ const categoryDisplay: Record<SignalCategory, string> = {
   commodities: "Matières Prem.",
 };
 
-export function SignalTable({ signals, isLoading, error }: SignalTableProps) {
+export function SignalTable({ signals, isLoading, error, onToggleFavorite }: SignalTableProps) {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'time', direction: 'desc' });
 
   const sortedSignals = useMemo(() => {
     let sortableItems = [...signals];
     if (sortConfig.key) {
       sortableItems.sort((a, b) => {
-        const valA = a[sortConfig.key as keyof Signal];
-        const valB = b[sortConfig.key as keyof Signal];
+        // Handle sorting for 'isFavorite' boolean
+        if (sortConfig.key === 'isFavorite') {
+            const valA = a.isFavorite ? 1 : 0;
+            const valB = b.isFavorite ? 1 : 0;
+            if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+        }
+
+        const valA = a[sortConfig.key as keyof Omit<Signal, 'isFavorite'>]; // Type assertion to exclude isFavorite if handled separately
+        const valB = b[sortConfig.key as keyof Omit<Signal, 'isFavorite'>];
+
 
         if (valA < valB) {
           return sortConfig.direction === 'asc' ? -1 : 1;
@@ -108,6 +119,7 @@ export function SignalTable({ signals, isLoading, error }: SignalTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-[40px]">Fav.</TableHead>
             <SortableHeader onClick={() => requestSort('ticker')} sortKey="ticker" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>Actif</SortableHeader>
             <SortableHeader onClick={() => requestSort('price')} sortKey="price" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>Prix</SortableHeader>
             <SortableHeader onClick={() => requestSort('time')} sortKey="time" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction}>Date et Heure</SortableHeader>
@@ -120,6 +132,18 @@ export function SignalTable({ signals, isLoading, error }: SignalTableProps) {
         <TableBody>
           {sortedSignals.map((signal) => (
             <TableRow key={signal.id} data-testid={`signal-row-${signal.id}`} className="hover:bg-muted/50 transition-colors">
+              <TableCell>
+                <Star
+                  className={cn(
+                    "h-5 w-5 cursor-pointer transition-all duration-150 ease-in-out",
+                    signal.isFavorite 
+                      ? "fill-yellow-400 text-yellow-500 scale-110" 
+                      : "text-muted-foreground hover:text-yellow-400 hover:scale-110"
+                  )}
+                  onClick={() => onToggleFavorite(signal.id, !!signal.isFavorite)}
+                  aria-label={signal.isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+                />
+              </TableCell>
               <TableCell className="font-medium">{signal.ticker}</TableCell>
               <TableCell>${signal.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 })}</TableCell>
               <TableCell>{new Date(signal.time).toLocaleString('fr-FR')}</TableCell>
@@ -130,6 +154,7 @@ export function SignalTable({ signals, isLoading, error }: SignalTableProps) {
                 <Badge
                   variant={signal.action === 'buy' ? 'default' : 'destructive'}
                   className={cn(
+                    "font-semibold",
                     signal.action === 'buy' ? 'bg-green-500/20 text-green-700 border-green-500/30 dark:bg-green-700/30 dark:text-green-300 dark:border-green-700/40' 
                                           : 'bg-red-500/20 text-red-700 border-red-500/30 dark:bg-red-700/30 dark:text-red-300 dark:border-red-700/40'
                   )}

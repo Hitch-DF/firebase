@@ -25,7 +25,7 @@ function Header() {
 
 export default function HomePage() {
   const { data: signals = [], isLoading, error, refetch } = useSignals();
-  const { simulateWebhook } = useSignalActions();
+  const { simulateWebhook, toggleFavoriteSignal } = useSignalActions(); // Added toggleFavoriteSignal
   const [filters, setFilters] = useState<Filters>({
     searchTerm: '',
     action: 'all',
@@ -36,7 +36,16 @@ export default function HomePage() {
     return signals.filter((signal) => {
       const searchTermMatch = signal.ticker.toLowerCase().includes(filters.searchTerm.toLowerCase());
       const actionMatch = filters.action === 'all' || signal.action === filters.action;
-      const categoryMatch = filters.category === 'all' || signal.category === filters.category;
+      
+      let categoryMatch = false;
+      if (filters.category === 'all') {
+        categoryMatch = true;
+      } else if (filters.category === 'watchlist') {
+        categoryMatch = !!signal.isFavorite;
+      } else {
+        categoryMatch = signal.category === filters.category;
+      }
+      
       return searchTermMatch && actionMatch && categoryMatch;
     });
   }, [signals, filters]);
@@ -75,6 +84,7 @@ export default function HomePage() {
       action: randomAction,
       category: randomCategory,
       // time will be set by addSignal if not provided
+      // isFavorite will be defaulted to false by addSignal/API
     });
   };
 
@@ -99,7 +109,12 @@ export default function HomePage() {
           <MessageSquarePlus className="mr-2 h-4 w-4" /> Simuler Signal Aléatoire
         </Button>
         <SignalFilters onFilterChange={setFilters} initialFilters={filters} />
-        <SignalTable signals={filteredSignals} isLoading={isLoading} error={error} />
+        <SignalTable 
+          signals={filteredSignals} 
+          isLoading={isLoading} 
+          error={error}
+          onToggleFavorite={toggleFavoriteSignal} // Pass the handler
+        />
       </main>
       <footer className="text-center py-4 text-sm text-muted-foreground border-t">
         © {new Date().getFullYear()} SignalStream. Tous droits réservés.
