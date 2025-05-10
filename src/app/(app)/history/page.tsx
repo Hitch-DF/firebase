@@ -73,35 +73,34 @@ export default function HistoryPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    // Main container for the entire page content, centered with max-width
+    <div className="mx-auto max-w-6xl space-y-6 p-4 md:p-6 bg-card rounded-lg shadow-md">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
         <h1 className="text-2xl font-semibold">{t('pageTitle')}</h1>
-        <Button onClick={handleRefresh} variant="default" size="sm">
+        <Button onClick={handleRefresh} variant="default" size="sm" className="w-full sm:w-auto">
           <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
           {t('refreshButton')}
         </Button>
       </div>
 
-      <div className="mx-auto max-w-6xl">
-        <SignalFilters 
-          onFilterChange={setFilters} 
-          initialFilters={filters} 
-          language={CURRENT_LANGUAGE}
-          // searchPlaceholder={t('searchPlaceholder')} 
-        />
+      <SignalFilters 
+        onFilterChange={setFilters} 
+        initialFilters={filters} 
+        language={CURRENT_LANGUAGE}
+        // searchPlaceholder={t('searchPlaceholder')} 
+      />
 
-        <SignalTable 
-          signals={filteredSignals} 
-          isLoading={isLoading} 
-          error={error}
-          onToggleFavorite={toggleFavoriteSignal} 
-          language={CURRENT_LANGUAGE}
-          loadingText={t('loadingSignals')}
-          noSignalsText={t('noSignals')}
-          errorLoadingText={t('errorLoadingSignals')}
-          isHistoryView={true} // Indicate this is the history view
-        />
-      </div>
+      <SignalTable 
+        signals={filteredSignals} 
+        isLoading={isLoading} 
+        error={error}
+        onToggleFavorite={toggleFavoriteSignal} 
+        language={CURRENT_LANGUAGE}
+        loadingText={t('loadingSignals')}
+        noSignalsText={t('noSignals')}
+        errorLoadingText={t('errorLoadingSignals')}
+        isHistoryView={true} // Indicate this is the history view
+      />
     </div>
   );
 }
