@@ -7,19 +7,21 @@ import { addGlobalFavoriteTicker, isTickerGloballyFavorited, removeGlobalFavorit
 
 const WEBHOOK_SECRET = process.env.NEXT_PUBLIC_WEBHOOK_SECRET || 'your-secret-token'; 
 
+const API_BASE = "https://onlysignalsai.com/api/signals";
+
 async function fetchSignals(): Promise<Signal[]> {
-  const res = await fetch('/api/signals');
+  const res = await fetch("https://onlysignalsai.com/api/signals");
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({ message: 'Failed to fetch signals' }));
     throw new Error(errorData.message || 'Failed to fetch signals');
   }
   const signals: Signal[] = await res.json();
-  // Ensure client-side favorite status matches global ticker preference after fetch
   return signals.map(signal => ({
     ...signal,
     isFavorite: isTickerGloballyFavorited(signal.ticker),
   }));
 }
+
 
 export function useSignals() {
   return useQuery<Signal[], Error>({
@@ -37,7 +39,7 @@ export async function addSignal(newSignalData: Omit<Signal, 'id' | 'time'> & { t
     isFavorite: isTickerGloballyFavorited(newSignalData.ticker) || false,
   };
 
-  const res = await fetch('/api/signals', {
+  const res = await fetch('https://onlysignalsai.com/api/signals', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
